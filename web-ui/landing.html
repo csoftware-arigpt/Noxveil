@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noxveil - Operations Workspace</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .landing-shell {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding: 24px 0 60px;
+        }
+
+        .landing-shell::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 15% 18%, rgba(125, 243, 208, 0.12), transparent 22%),
+                radial-gradient(circle at 82% 16%, rgba(255, 124, 112, 0.12), transparent 20%),
+                radial-gradient(circle at 52% 84%, rgba(115, 199, 255, 0.08), transparent 26%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .landing-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 38px;
+            padding: 14px 18px;
+            border: 1px solid rgba(57, 84, 121, 0.7);
+            border-radius: 22px;
+            background: rgba(8, 17, 29, 0.72);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .landing-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .landing-brand-mark {
+            width: 46px;
+            height: 46px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            border: 1px solid rgba(125, 243, 208, 0.28);
+            background:
+                radial-gradient(circle at top, rgba(125, 243, 208, 0.2), transparent 55%),
+                rgba(255, 255, 255, 0.04);
+            box-shadow: 0 0 28px rgba(125, 243, 208, 0.12);
+            font-size: 1.25rem;
+        }
+
+        .landing-brand-copy {
+            display: grid;
+            gap: 2px;
+        }
+
+        .landing-brand-copy strong {
+            color: var(--text-light);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .landing-brand-copy span {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        .landing-nav-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .landing-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+            gap: 22px;
+            align-items: stretch;
+            margin-bottom: 22px;
+        }
+
+        .landing-hero-main,
+        .landing-hero-panel,
+        .landing-feature,
+        .landing-flow-card,
+        .landing-status-row {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(57, 84, 121, 0.72);
+            background: linear-gradient(160deg, rgba(9, 18, 29, 0.96), rgba(16, 26, 45, 0.9));
+            box-shadow: var(--shadow-lg);
+            backdrop-filter: blur(20px);
+        }
+
+        .landing-hero-main,
+        .landing-hero-panel {
+            border-radius: 28px;
+            padding: clamp(24px, 4vw, 38px);
+        }
+
+        .landing-hero-main::before,
+        .landing-hero-panel::before,
+        .landing-feature::before,
+        .landing-flow-card::before,
+        .landing-status-row::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 34%);
+            pointer-events: none;
+        }
+
+        .landing-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(115, 199, 255, 0.25);
+            background: rgba(115, 199, 255, 0.08);
+            color: var(--info);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .landing-title {
+            max-width: 12ch;
+            margin-bottom: 18px;
+            font-size: clamp(2.8rem, 7vw, 5rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+            color: var(--text-light);
+            text-shadow: 0 0 30px rgba(125, 243, 208, 0.12);
+        }
+
+        .landing-title span {
+            color: var(--accent);
+        }
+
+        .landing-copy {
+            max-width: 62ch;
+            margin-bottom: 24px;
+            font-size: 1.02rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+        }
+
+        .landing-cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .landing-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .landing-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(57, 84, 121, 0.72);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+
+        .landing-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .landing-meta-card {
+            padding: 14px 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(57, 84, 121, 0.72);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .landing-meta-label {
+            margin-bottom: 6px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .landing-meta-value {
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .landing-panel-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .landing-panel-label {
+            color: var(--text-light);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .landing-panel-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(102, 240, 166, 0.35);
+            background: rgba(102, 240, 166, 0.09);
+            color: var(--success);
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            text-transform: uppercase;
+        }
+
+        .landing-status-stack {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .landing-status-row {
+            padding: 14px 16px;
+            border-radius: 18px;
+        }
+
+        .landing-status-name {
+            margin-bottom: 6px;
+            color: var(--text-light);
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .landing-status-copy {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            line-height: 1.7;
+        }
+
+        .landing-command {
+            padding: 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(115, 199, 255, 0.22);
+            background: rgba(3, 9, 18, 0.88);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        .landing-command-label {
+            margin-bottom: 10px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .landing-command code {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .landing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .landing-feature,
+        .landing-flow-card {
+            padding: 22px;
+            border-radius: 24px;
+        }
+
+        .landing-feature-icon {
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(125, 243, 208, 0.25);
+            background: rgba(125, 243, 208, 0.08);
+            font-size: 1.1rem;
+        }
+
+        .landing-feature h3,
+        .landing-flow-card h3 {
+            margin-bottom: 10px;
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .landing-feature p,
+        .landing-flow-card p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.75;
+        }
+
+        .landing-flow {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .landing-step {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            margin-bottom: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 124, 112, 0.25);
+            background: rgba(255, 124, 112, 0.08);
+            color: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .landing-footer {
+            margin-top: 20px;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.82rem;
+        }
+
+        .landing-footer strong {
+            color: var(--warning);
+        }
+
+        @media (max-width: 1100px) {
+            .landing-hero,
+            .landing-grid,
+            .landing-flow {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .landing-shell {
+                padding-top: 16px;
+            }
+
+            .landing-nav {
+                padding: 14px;
+                border-radius: 18px;
+            }
+
+            .landing-nav,
+            .landing-panel-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .landing-hero-main,
+            .landing-hero-panel,
+            .landing-feature,
+            .landing-flow-card {
+                padding: 20px;
+                border-radius: 22px;
+            }
+
+            .landing-title {
+                font-size: clamp(2.3rem, 12vw, 3.3rem);
+            }
+
+            .landing-cta-row,
+            .landing-nav-actions {
+                width: 100%;
+            }
+
+            .landing-cta-row .btn,
+            .landing-nav-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-shell">
+        <div class="container">
+            <header class="landing-nav">
+                <div class="landing-brand">
+                    <div class="landing-brand-mark">⚡</div>
+                    <div class="landing-brand-copy">
+                        <strong>Noxveil</strong>
+                        <span>Operator workspace · total control</span>
+                    </div>
+                </div>
+                <div class="landing-nav-actions">
+                    <a href="/login" class="btn">Sign in</a>
+                    <a href="/dashboard" class="btn btn-primary" id="landingPrimaryAction">Open dashboard</a>
+                </div>
+            </header>
+
+            <section class="landing-hero">
+                <div class="landing-hero-main">
+                    <div class="landing-eyebrow">Built for operators</div>
+                    <h1 class="landing-title">Your entire operation, <span>one interface</span></h1>
+                    <p class="landing-copy">
+                        Stop jumping between tools. Noxveil puts everything within reach — deploy an agent in seconds,
+                        watch it check in live, open a shell, and review every action, all without leaving a single tab
+                    </p>
+
+                    <div class="landing-cta-row">
+                        <a href="/login" class="btn btn-primary" id="landingLoginAction">Sign in</a>
+                        <a href="/dashboard" class="btn" id="landingDashboardAction">Open dashboard</a>
+                    </div>
+
+                    <div class="landing-chip-row">
+                        <div class="landing-chip">Deploy in seconds, not hours</div>
+                        <div class="landing-chip">Live terminals on every agent</div>
+                        <div class="landing-chip">Full audit trail, always on</div>
+                        <div class="landing-chip">MFA-protected access</div>
+                    </div>
+
+                    <div class="landing-meta-grid">
+                        <div class="landing-meta-card">
+                            <div class="landing-meta-label">Workspace</div>
+                            <div class="landing-meta-value">Everything in one place — agents, terminals, and deployments</div>
+                        </div>
+                        <div class="landing-meta-card">
+                            <div class="landing-meta-label">Deploy</div>
+                            <div class="landing-meta-value">One-click staging links — agents connect and register themselves</div>
+                        </div>
+                        <div class="landing-meta-card">
+                            <div class="landing-meta-label">Security</div>
+                            <div class="landing-meta-value">Signed links, per-agent tokens, and a complete audit trail</div>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="landing-hero-panel">
+                    <div class="landing-panel-top">
+                        <div class="landing-panel-label">At a glance</div>
+                        <div class="landing-panel-status" id="landingStatusPill">Checking access route</div>
+                    </div>
+
+                    <div class="landing-status-stack">
+                        <div class="landing-status-row">
+                            <div class="landing-status-name">Deployment</div>
+                            <div class="landing-status-copy">
+                                Get an agent live in seconds. Generate a signed, time-limited launch link from the dashboard — send it once, and the agent registers itself. No backdoors left open
+                            </div>
+                        </div>
+                        <div class="landing-status-row">
+                            <div class="landing-status-name">Agents</div>
+                            <div class="landing-status-copy">
+                                See exactly who is online right now. Pick one agent for a live terminal, or select several and broadcast the same command to all of them in a single click
+                            </div>
+                        </div>
+                        <div class="landing-status-row">
+                            <div class="landing-status-name">Account Security</div>
+                            <div class="landing-status-copy">
+                                Your account, locked down your way. JWT sessions auto-refresh silently, login history is always available, and MFA only appears for accounts that need it
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="landing-command">
+                        <div class="landing-command-label">Access route</div>
+                        <code id="landingRoutePreview">Resolving the current public endpoint...</code>
+                    </div>
+                </aside>
+            </section>
+
+            <section class="landing-grid">
+                <article class="landing-feature">
+                    <div class="landing-feature-icon">🎯</div>
+                    <h3>Zero-friction deployment</h3>
+                    <p>
+                        One click generates a signed, time-limited launch link. The agent registers itself and switches to its own token. No manual steps, no exposed URLs sitting around
+                    </p>
+                </article>
+                <article class="landing-feature">
+                    <div class="landing-feature-icon">🛰️</div>
+                    <h3>Live access, instant response</h3>
+                    <p>
+                        Shell into any agent the moment you need it. Run commands, review output, and move fast — or broadcast to every online agent at once
+                    </p>
+                </article>
+                <article class="landing-feature">
+                    <div class="landing-feature-icon">🛡️</div>
+                    <h3>Security that stays out of the way</h3>
+                    <p>
+                        Clean login by default. If an account has MFA enabled, the second factor appears automatically — invisible friction for everyone else
+                    </p>
+                </article>
+            </section>
+
+            <section class="landing-flow">
+                <article class="landing-flow-card">
+                    <div class="landing-step">1</div>
+                    <h3>Sign in and you're home</h3>
+                    <p>One clean form. MFA only appears if your account needs it — no clutter for everyone else. Dashboard is one click away</p>
+                </article>
+                <article class="landing-flow-card">
+                    <div class="landing-step">2</div>
+                    <h3>Launch your first agent</h3>
+                    <p>Generate a signed link or staging command, paste it on the target, and watch the agent appear in your dashboard automatically</p>
+                </article>
+                <article class="landing-flow-card">
+                    <div class="landing-step">3</div>
+                    <h3>Stay in full control</h3>
+                    <p>Monitor every agent in real time. Open a live terminal, send commands to one or all, and review every action in the audit log</p>
+                </article>
+            </section>
+
+            <div class="landing-footer">
+                <strong>Educational use only.</strong> Work only in environments you own or have explicit written authorization to assess
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        (async () => {
+            const isAuthenticated = window.Auth && Auth.isAuthenticated();
+            const primaryAction = document.getElementById('landingPrimaryAction');
+            const loginAction = document.getElementById('landingLoginAction');
+            const dashboardAction = document.getElementById('landingDashboardAction');
+            const routePreview = document.getElementById('landingRoutePreview');
+            const statusPill = document.getElementById('landingStatusPill');
+
+            if (isAuthenticated) {
+                primaryAction.textContent = 'Open dashboard';
+                primaryAction.href = '/dashboard';
+                loginAction.textContent = 'You are already signed in';
+                loginAction.href = '/dashboard';
+            } else {
+                primaryAction.textContent = 'Open sign in';
+                primaryAction.href = '/login';
+                dashboardAction.textContent = 'Preview dashboard';
+            }
+
+            const localFallback = `${window.location.origin}/login`;
+            routePreview.textContent = localFallback;
+            statusPill.textContent = 'Local access ready';
+
+            try {
+                const response = await fetch('/api/ui/tunnel-url');
+                const data = await response.json();
+                const baseUrl = data.url || window.location.origin;
+                routePreview.textContent = `${baseUrl.replace(/\/$/, '')}/login`;
+                statusPill.textContent = data.url ? 'Tunnel route ready' : 'Local access ready';
+            } catch (error) {
+                routePreview.textContent = localFallback;
+                statusPill.textContent = 'Local access ready';
+            }
+        })();
+    </script>
+</body>
+</html>

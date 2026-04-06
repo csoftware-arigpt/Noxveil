@@ -1,0 +1,9 @@
+C2_URL = "https://your-c2.example"
+CALLBACK_INTERVAL = 5
+JITTER = 2
+AGENT_AUTH_TOKEN = "replace-me-with-a-bootstrap-token"
+REQUEST_TIMEOUT = 30
+MAX_REGISTRATION_RETRIES = 3
+FILE_ENCODING = "base64"
+SCREENSHOT_FORMAT = "png"
+MAX_SCREENSHOT_SIZE = (1920, 1080)

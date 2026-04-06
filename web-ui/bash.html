@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noxveil - Server Workspace</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: clamp(12px, 2.5vw, 15px) clamp(15px, 3vw, 20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            font-size: clamp(1rem, 3vw, 1.25rem);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: clamp(10px, 2vw, 15px);
+            flex-wrap: wrap;
+        }
+
+        .status {
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+            padding: 5px 12px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            font-family: var(--font-mono);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .status.connected {
+            background: var(--success-bg);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .status.disconnected {
+            background: var(--danger-bg);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .terminal-container {
+            flex: 1;
+            padding: clamp(10px, 2vw, 15px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .session-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .session-toolbar .btn {
+            min-width: 0;
+        }
+
+        .shell-preset {
+            appearance: none;
+            border: 1px solid rgba(115, 199, 255, 0.28);
+            background: rgba(115, 199, 255, 0.08);
+            color: var(--text-light);
+            border-radius: 999px;
+            padding: 7px 11px;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            cursor: pointer;
+        }
+
+        #terminal {
+            flex: 1;
+            background: #050505;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: clamp(12px, 2.5vw, 15px);
+            overflow-y: auto;
+            font-family: var(--font-mono);
+            font-size: clamp(13px, 2.5vw, 14px);
+            line-height: 1.5;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .output-line {
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-bottom: 5px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .output-chunk {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .output-line.error {
+            color: var(--danger);
+        }
+
+        .output-line.success {
+            color: var(--text-primary);
+        }
+
+        .output-line.info {
+            color: var(--info);
+        }
+
+        .output-line.warning {
+            color: var(--warning);
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            gap: 10px;
+        }
+
+        .prompt {
+            color: var(--text-primary);
+            white-space: nowrap;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        #commandInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-family: var(--font-mono);
+            font-size: clamp(13px, 2.5vw, 14px);
+            outline: none;
+            min-width: 0;
+        }
+
+        .input-line.secret-mode {
+            border-top-color: rgba(255, 165, 2, 0.4);
+            box-shadow: inset 0 1px 0 rgba(255, 165, 2, 0.08);
+        }
+
+        .input-line.secret-mode .prompt {
+            color: var(--warning);
+            text-shadow: none;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--text-primary);
+            color: var(--text-primary);
+            padding: 6px 14px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: clamp(0.75rem, 2vw, 0.85rem);
+            font-family: var(--font-mono);
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+
+        /* Scrollbar styling */
+        #terminal::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #terminal::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+        }
+
+        #terminal::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--text-dim), var(--text-secondary));
+            border-radius: var(--radius-sm);
+        }
+
+        #terminal::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--text-secondary), var(--text-primary));
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header h1 {
+                justify-content: center;
+            }
+
+            .header-actions {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .header-actions .back-btn,
+            .header-actions .status {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .input-line {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .prompt {
+                text-align: center;
+            }
+        }
+
+        /* Command history indicator */
+        .history-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: none;
+            z-index: 1000;
+        }
+
+        .history-indicator.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            <span>💻</span>
+            <span>Noxveil server shell</span>
+        </h1>
+        <div class="header-actions">
+            <span class="status disconnected" id="connectionStatus">
+                <span class="status-indicator"></span>
+                <span>Disconnected</span>
+            </span>
+            <a href="/dashboard" class="back-btn">
+                <span>←</span>
+                <span>Back</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="terminal-container">
+        <div class="session-toolbar" id="sessionToolbar">
+            <button class="btn btn-small" id="copySessionBtn">Copy transcript</button>
+            <button class="btn btn-small" id="saveSessionBtn">Save transcript</button>
+            <button class="btn btn-small" id="clearSessionBtn">Clear View</button>
+            <button class="btn btn-small btn-warning" id="reconnectShellBtn">Reconnect</button>
+            <button class="shell-preset" data-shell-command="pwd">pwd</button>
+            <button class="shell-preset" data-shell-command="whoami">whoami</button>
+            <button class="shell-preset" data-shell-command="hostname">hostname</button>
+            <button class="shell-preset" data-shell-command="sudo -l">sudo -l</button>
+        </div>
+        <div id="terminal">
+            <div class="output-line info">🔌 Connecting to the Noxveil server shell...</div>
+        </div>
+        <div class="input-line">
+            <span class="prompt" id="prompt">server@noxveil:~$</span>
+            <input 
+                type="text" 
+                id="commandInput" 
+                placeholder="Enter a command..." 
+                autocomplete="off"
+                autofocus
+            >
+        </div>
+    </div>
+
+    <div class="history-indicator" id="historyIndicator">
+        History: <span id="historyPosition">0</span>/<span id="historyTotal">0</span>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        if (!Auth.isAuthenticated()) {
+            window.location.href = "/login";
+        }
+
+        let ws = null;
+        let commandHistory = [];
+        let historyIndex = -1;
+        let isConnected = false;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 10;
+        let awaitingSecretInput = false;
+        let sessionTranscript = [];
+
+        const terminal = document.getElementById("terminal");
+        const commandInput = document.getElementById("commandInput");
+        const connectionStatus = document.getElementById("connectionStatus");
+        const prompt = document.getElementById("prompt");
+        const historyIndicator = document.getElementById("historyIndicator");
+        const historyPosition = document.getElementById("historyPosition");
+        const historyTotal = document.getElementById("historyTotal");
+        const inputLine = document.querySelector(".input-line");
+
+        function addOutput(text, type = "success") {
+            const line = document.createElement("div");
+            line.className = `output-line ${type}`;
+            line.textContent = text;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+            sessionTranscript.push(`${text}\n`);
+        }
+
+        function appendStream(text, type = "success") {
+            if (!text) {
+                return;
+            }
+
+            const span = document.createElement("span");
+            span.className = `output-chunk ${type}`;
+            span.textContent = text;
+            terminal.appendChild(span);
+            terminal.scrollTop = terminal.scrollHeight;
+            sessionTranscript.push(text);
+        }
+
+        function updateSecretInputMode(enabled) {
+            awaitingSecretInput = enabled;
+            commandInput.type = enabled ? "password" : "text";
+                commandInput.placeholder = enabled ? "Enter the sudo password..." : "Enter a command...";
+            inputLine.classList.toggle("secret-mode", enabled);
+        }
+
+        function detectSecretPrompt(text) {
+            const secretPrompt = /(password|passphrase)[^:\n\r]{0,80}:\s*$/i.test(text);
+            const shellPrompt = /(^|\n)[^\n\r]*[#$>]\s$/m.test(text);
+
+            if (secretPrompt) {
+                updateSecretInputMode(true);
+                return;
+            }
+
+            if (shellPrompt || /sorry, try again/i.test(text)) {
+                updateSecretInputMode(false);
+            }
+        }
+
+        function addToHistory(command) {
+            if (command.trim() && command !== commandHistory[commandHistory.length - 1]) {
+                commandHistory.push(command);
+                historyIndex = commandHistory.length;
+                updateHistoryIndicator();
+            }
+        }
+
+        function updateHistoryIndicator() {
+            historyPosition.textContent = String(Math.min(historyIndex + 1, commandHistory.length));
+            historyTotal.textContent = String(commandHistory.length);
+            if (commandHistory.length > 0) {
+                historyIndicator.classList.add("show");
+            } else {
+                historyIndicator.classList.remove("show");
+            }
+        }
+
+        function connect() {
+            const token = Auth.getToken();
+            if (!token) {
+                Auth.logout();
+                return;
+            }
+
+            const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            const wsUrl = `${protocol}//${window.location.host}/api/v1/ws/bash?token=${encodeURIComponent(token)}`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                isConnected = true;
+                reconnectAttempts = 0;
+                connectionStatus.className = "status connected";
+                connectionStatus.innerHTML = `<span class="status-indicator"></span><span>Connected</span>`;
+                addOutput("Connected to the Noxveil server shell", "info");
+                commandInput.focus();
+            };
+
+            ws.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                switch (message.type) {
+                    case "connected":
+                        addOutput(message.data, "info");
+                        if (message.hostname) {
+                            prompt.textContent = `server@${message.hostname}:~$`;
+                        }
+                        break;
+                    case "output":
+                        appendStream(message.data, message.is_error ? "error" : "success");
+                        detectSecretPrompt(message.data);
+                        break;
+                    case "ping":
+                        ws.send(JSON.stringify({ type: "pong" }));
+                        break;
+                    case "error":
+                        addOutput(message.data, "error");
+                        updateSecretInputMode(false);
+                        break;
+                    case "shell_exit":
+                        addOutput(message.data, "warning");
+                        updateSecretInputMode(false);
+                        break;
+                }
+            };
+
+            ws.onclose = function() {
+                isConnected = false;
+                connectionStatus.className = "status disconnected";
+                connectionStatus.innerHTML = `<span class="status-indicator"></span><span>Disconnected</span>`;
+                updateSecretInputMode(false);
+
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts += 1;
+                        addOutput(`Connection lost. Reconnecting (${reconnectAttempts}/${maxReconnectAttempts})...`, "warning");
+                    setTimeout(connect, Math.min(1000 * reconnectAttempts, 5000));
+                } else {
+                    addOutput("The reconnect limit was reached. Refresh the page to try again", "error");
+                }
+            };
+
+            ws.onerror = function(error) {
+                console.error("WebSocket error:", error);
+            };
+        }
+
+        function copySessionTranscript() {
+            const payload = sessionTranscript.join("");
+            if (!payload.trim()) {
+                addOutput("The transcript is empty", "error");
+                return;
+            }
+            navigator.clipboard.writeText(payload)
+                .then(() => addOutput("Transcript copied to the clipboard", "info"))
+                .catch(() => addOutput("Could not copy the transcript", "error"));
+        }
+
+        function saveSessionTranscript() {
+            const payload = sessionTranscript.join("");
+            if (!payload.trim()) {
+                addOutput("The transcript is empty", "error");
+                return;
+            }
+            const blob = new Blob([payload], { type: "text/plain;charset=utf-8" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `server-shell-${Date.now()}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+            addOutput("Transcript saved", "info");
+        }
+
+        function clearSessionView() {
+            terminal.innerHTML = "";
+            sessionTranscript = [];
+            addOutput("Terminal view cleared", "info");
+        }
+
+        function executeCommand(command) {
+            if (!isConnected) {
+                return;
+            }
+
+            const value = String(command ?? "");
+            const trimmed = value.trim();
+            if (!awaitingSecretInput && !trimmed) {
+                return;
+            }
+
+            if (!awaitingSecretInput && trimmed) {
+                addToHistory(trimmed);
+                sessionTranscript.push(`$ ${trimmed}\n`);
+            }
+
+            ws.send(JSON.stringify({ type: "input", data: value }));
+            if (awaitingSecretInput) {
+                updateSecretInputMode(false);
+            }
+        }
+
+        commandInput.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                const command = commandInput.value;
+                executeCommand(command);
+                commandInput.value = "";
+            } else if (event.key === "ArrowUp") {
+                event.preventDefault();
+                if (awaitingSecretInput) {
+                    return;
+                }
+                if (historyIndex > 0) {
+                    historyIndex -= 1;
+                    commandInput.value = commandHistory[historyIndex];
+                    updateHistoryIndicator();
+                }
+            } else if (event.key === "ArrowDown") {
+                event.preventDefault();
+                if (awaitingSecretInput) {
+                    return;
+                }
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex += 1;
+                    commandInput.value = commandHistory[historyIndex];
+                    updateHistoryIndicator();
+                } else {
+                    historyIndex = commandHistory.length;
+                    commandInput.value = "";
+                    updateHistoryIndicator();
+                }
+            } else if (event.ctrlKey && event.key === "l") {
+                event.preventDefault();
+                clearSessionView();
+            } else if (event.ctrlKey && event.key === "c") {
+                event.preventDefault();
+                if (isConnected && ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: "signal", data: "interrupt" }));
+                }
+                addOutput("^C", "info");
+                updateSecretInputMode(false);
+            }
+        });
+
+        document.getElementById("copySessionBtn").addEventListener("click", copySessionTranscript);
+        document.getElementById("saveSessionBtn").addEventListener("click", saveSessionTranscript);
+        document.getElementById("clearSessionBtn").addEventListener("click", clearSessionView);
+        document.getElementById("reconnectShellBtn").addEventListener("click", () => {
+            reconnectAttempts = 0;
+            if (ws) {
+                try {
+                    ws.close();
+                } catch (_error) {
+                    connect();
+                }
+            } else {
+                connect();
+            }
+        });
+        document.getElementById("sessionToolbar").addEventListener("click", (event) => {
+            const preset = event.target.closest("[data-shell-command]");
+            if (!preset) {
+                return;
+            }
+            commandInput.value = preset.getAttribute("data-shell-command") || "";
+            commandInput.focus();
+        });
+
+        terminal.addEventListener("click", function() {
+            commandInput.focus();
+        });
+
+        connect();
+        setTimeout(() => {
+            addOutput("Tips:", "info");
+            addOutput("  Use ↑/↓ arrows for command history", "success");
+            addOutput("  Press Ctrl+L to clear the terminal", "success");
+            addOutput("  Press Ctrl+C to interrupt the running command", "success");
+            addOutput("  Sudo/password prompts switch the input into hidden mode", "warning");
+        }, 500);
+    </script>
+</body>
+</html>

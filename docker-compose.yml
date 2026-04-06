@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  noxveil:
+    image: noxveil:latest
+    container_name: noxveil
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "1324:1324"
+    volumes:
+      - ./data:/app/data
+      - ./web-ui:/app/web-ui
+      - ./agent:/app/agent
+    environment:
+      - C2_PORT=1324
+      - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD:-changemeplease}
+      - ENABLE_TUNNEL=true
+      - JWT_SECRET_KEY=change-this-in-production-use-env-var
+      - AGENT_AUTH_TOKEN=agent-auth-token-change-me
+    restart: unless-stopped
+    networks:
+      - noxveil-network
+    # cloudflared is installed inside the container
+    # Tunnel URL is printed in docker logs
+
+networks:
+  noxveil-network:
+    driver: bridge

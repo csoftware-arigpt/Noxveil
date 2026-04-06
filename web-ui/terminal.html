@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noxveil - Agent Workspace</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .terminal-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background:
+                radial-gradient(circle at top left, rgba(0, 212, 255, 0.14), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(255, 0, 85, 0.12), transparent 30%),
+                var(--bg-primary);
+        }
+
+        .terminal-shell-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            backdrop-filter: blur(18px);
+            background: rgba(8, 12, 22, 0.88);
+            border-bottom: 1px solid rgba(160, 254, 199, 0.12);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.24);
+        }
+
+        .terminal-shell-header .container {
+            padding-top: 18px;
+            padding-bottom: 18px;
+        }
+
+        .terminal-hero {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .terminal-hero-copy {
+            max-width: 760px;
+        }
+
+        .terminal-eyebrow {
+            font-family: var(--font-mono);
+            color: var(--info);
+            font-size: 0.8rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .terminal-title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .terminal-title-row h1 {
+            margin: 0;
+            font-size: clamp(1.6rem, 3vw, 2.45rem);
+            color: #f4fff9;
+        }
+
+        .terminal-subtitle {
+            margin-top: 10px;
+            color: var(--text-muted);
+            max-width: 680px;
+        }
+
+        .terminal-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            background: rgba(0, 255, 136, 0.08);
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: var(--text-light);
+        }
+
+        .terminal-status-pill .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 12px currentColor;
+        }
+
+        .terminal-status-pill.waiting {
+            color: var(--warning);
+            border-color: rgba(255, 165, 2, 0.25);
+            background: rgba(255, 165, 2, 0.08);
+        }
+
+        .terminal-status-pill.disconnected {
+            color: var(--danger);
+            border-color: rgba(255, 71, 87, 0.24);
+            background: rgba(255, 71, 87, 0.08);
+        }
+
+        .terminal-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .terminal-workspace {
+            display: grid;
+            grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
+            gap: 18px;
+            padding-top: 24px;
+            padding-bottom: 24px;
+        }
+
+        .terminal-main,
+        .terminal-sidebar-card {
+            border-radius: 24px;
+            border: 1px solid rgba(74, 85, 104, 0.55);
+            background:
+                linear-gradient(160deg, rgba(17, 24, 39, 0.96), rgba(11, 18, 32, 0.96));
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
+        }
+
+        .terminal-main {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            min-height: 760px;
+        }
+
+        .terminal-main-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .terminal-main-title {
+            color: #f3fff8;
+            font-size: 1rem;
+            font-family: var(--font-mono);
+        }
+
+        .terminal-main-meta {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+        }
+
+        .terminal-meta-divider {
+            opacity: 0.45;
+            margin: 0 8px;
+        }
+
+        .terminal-screen {
+            flex: 1;
+            background:
+                radial-gradient(circle at top right, rgba(0, 255, 136, 0.08), transparent 26%),
+                #05070d;
+            border: 1px solid rgba(74, 85, 104, 0.45);
+            border-radius: 18px;
+            padding: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terminal-output {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .terminal-input-area {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: auto auto minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+            padding: 12px 14px;
+            border: 1px solid rgba(74, 85, 104, 0.5);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .terminal-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .terminal-sidebar-card {
+            padding: 18px;
+        }
+
+        .sidebar-card-title {
+            margin-bottom: 14px;
+            font-family: var(--font-mono);
+            font-size: 0.92rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+        }
+
+        .agent-identity-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .agent-identity-item,
+        .action-group,
+        .artifact-panel {
+            min-width: 0;
+            padding: 12px 13px;
+            border-radius: 16px;
+            border: 1px solid rgba(74, 85, 104, 0.45);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .identity-label {
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .identity-value {
+            margin-top: 6px;
+            color: #f2fff8;
+            word-break: break-word;
+            font-size: 0.92rem;
+        }
+
+        .action-stack {
+            display: grid;
+            gap: 12px;
+        }
+
+        .action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .action-row .btn {
+            flex: 1 1 0;
+            min-width: 0;
+            justify-content: center;
+        }
+
+        .action-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+        }
+
+        .action-group input[type="text"],
+        .action-group input[type="number"] {
+            margin-bottom: 10px;
+        }
+
+        .artifact-panel {
+            min-height: 180px;
+        }
+
+        .artifact-empty {
+            color: var(--text-dim);
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
+        .artifact-preview-image {
+            width: 100%;
+            max-height: 320px;
+            object-fit: contain;
+            border-radius: 14px;
+            border: 1px solid rgba(74, 85, 104, 0.5);
+            background: rgba(0, 0, 0, 0.22);
+        }
+
+        .artifact-meta {
+            margin-top: 12px;
+            color: var(--text-muted);
+            font-size: 0.84rem;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .artifact-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .history-list,
+        .preset-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .history-list-helper {
+            margin-bottom: 12px;
+            color: var(--text-dim);
+            font-size: 0.78rem;
+            line-height: 1.6;
+            font-family: var(--font-mono);
+        }
+
+        .history-item {
+            padding: 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(74, 85, 104, 0.42);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        button.history-item {
+            width: 100%;
+            cursor: pointer;
+            text-align: left;
+            color: inherit;
+            transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+        }
+
+        button.history-item:hover {
+            border-color: rgba(115, 199, 255, 0.32);
+            background: rgba(115, 199, 255, 0.06);
+            transform: translateY(-1px);
+        }
+
+        .history-command {
+            color: #f3fff8;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            line-height: 1.55;
+            word-break: break-word;
+        }
+
+        .history-meta {
+            margin-top: 8px;
+            color: var(--text-dim);
+            font-size: 0.76rem;
+            line-height: 1.6;
+        }
+
+        .preset-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .terminal-preset {
+            width: 100%;
+            justify-content: center;
+            min-height: 44px;
+        }
+
+        .terminal-help-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .terminal-help-item {
+            padding: 11px 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(74, 85, 104, 0.4);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+            font-size: 0.84rem;
+            line-height: 1.5;
+        }
+
+        .terminal-help-item code {
+            display: inline-block;
+            margin-right: 6px;
+            color: var(--text-light);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 3px 7px;
+            border-radius: 8px;
+        }
+
+        .session-summary {
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            line-height: 1.6;
+        }
+
+        .session-stack {
+            display: grid;
+            gap: 10px;
+        }
+
+        .session-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .session-select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 1px solid rgba(74, 85, 104, 0.42);
+            background: rgba(255, 255, 255, 0.03);
+            color: inherit;
+            cursor: pointer;
+            text-align: left;
+            transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+        }
+
+        .session-select:hover {
+            transform: translateY(-1px);
+            border-color: rgba(115, 199, 255, 0.3);
+            background: rgba(115, 199, 255, 0.05);
+        }
+
+        .session-select.active {
+            border-color: rgba(102, 240, 166, 0.36);
+            background: rgba(102, 240, 166, 0.08);
+            box-shadow: 0 0 0 1px rgba(102, 240, 166, 0.16);
+        }
+
+        .session-select.closed {
+            border-color: rgba(255, 107, 129, 0.24);
+            background: rgba(255, 107, 129, 0.06);
+        }
+
+        .session-select.switching {
+            border-color: rgba(255, 180, 84, 0.28);
+            background: rgba(255, 180, 84, 0.06);
+        }
+
+        .session-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .session-title {
+            color: #f4fff9;
+            font-family: var(--font-mono);
+            font-size: 0.84rem;
+        }
+
+        .session-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(74, 85, 104, 0.42);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .session-pill.open {
+            color: var(--success);
+            border-color: rgba(102, 240, 166, 0.28);
+            background: rgba(102, 240, 166, 0.08);
+        }
+
+        .session-pill.closed {
+            color: var(--danger);
+            border-color: rgba(255, 107, 129, 0.25);
+            background: rgba(255, 107, 129, 0.08);
+        }
+
+        .session-pill.unread {
+            color: var(--warning);
+            border-color: rgba(255, 180, 84, 0.25);
+            background: rgba(255, 180, 84, 0.08);
+        }
+
+        .session-meta {
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            line-height: 1.6;
+        }
+
+        .session-close {
+            min-width: 46px;
+            border-radius: 16px;
+        }
+
+        .terminal-history-modal .modal-content {
+            max-width: min(1120px, 96vw);
+        }
+
+        .terminal-history-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .terminal-history-summary {
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+        }
+
+        .terminal-history-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .terminal-history-entry {
+            border: 1px solid rgba(74, 85, 104, 0.45);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+        }
+
+        .terminal-history-entry summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 14px 16px;
+        }
+
+        .terminal-history-entry summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .terminal-history-entry[open] summary {
+            border-bottom: 1px solid rgba(74, 85, 104, 0.35);
+            background: rgba(115, 199, 255, 0.05);
+        }
+
+        .terminal-history-entry-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .terminal-history-command {
+            color: #f3fff8;
+            font-family: var(--font-mono);
+            font-size: 0.88rem;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .terminal-history-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            border: 1px solid rgba(74, 85, 104, 0.45);
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .terminal-history-badge.completed {
+            color: var(--success);
+            border-color: rgba(102, 240, 166, 0.3);
+            background: rgba(102, 240, 166, 0.09);
+        }
+
+        .terminal-history-badge.error {
+            color: var(--danger);
+            border-color: rgba(255, 107, 129, 0.28);
+            background: rgba(255, 107, 129, 0.09);
+        }
+
+        .terminal-history-badge.pending,
+        .terminal-history-badge.sent {
+            color: var(--warning);
+            border-color: rgba(255, 180, 84, 0.28);
+            background: rgba(255, 180, 84, 0.08);
+        }
+
+        .terminal-history-meta {
+            margin-top: 8px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            line-height: 1.6;
+        }
+
+        .terminal-history-output {
+            padding: 16px;
+        }
+
+        .terminal-history-output-label {
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .terminal-history-output pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: var(--text-light);
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.7;
+        }
+
+        .terminal-history-empty {
+            padding: 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(74, 85, 104, 0.42);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        @media (max-width: 1180px) {
+            .terminal-workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .terminal-main {
+                min-height: 640px;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .terminal-shell-header .container,
+            .terminal-workspace.container {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .terminal-toolbar {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .terminal-toolbar .btn,
+            .action-row .btn {
+                width: 100%;
+            }
+
+            .terminal-input-area {
+                grid-template-columns: 1fr;
+            }
+
+            .agent-identity-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-page">
+        <header class="terminal-shell-header">
+            <div class="container">
+                <div class="terminal-hero">
+                    <div class="terminal-hero-copy">
+                        <div class="terminal-eyebrow">Agent Workspace</div>
+                        <div class="terminal-title-row">
+                            <h1>Live agent workspace</h1>
+                            <div class="terminal-status-pill waiting" id="heroStatusPill">
+                                <span class="dot"></span>
+                                <span id="connectionStatus">Connecting...</span>
+                            </div>
+                        </div>
+                        <p class="terminal-subtitle">
+                            Run commands, move files, collect screenshots, and keep everything for this agent in one place
+                        </p>
+                    </div>
+                    <div class="terminal-toolbar">
+                        <a href="/dashboard" class="btn btn-small">Back</a>
+                        <button class="btn btn-small btn-primary" id="newSessionBtn">New shell</button>
+                        <button class="btn btn-small" id="openFullHistoryBtn">Full history</button>
+                        <button class="btn btn-small" id="refreshInfoBtn">Refresh details</button>
+                        <button class="btn btn-small btn-info" id="screenshotBtn">Take screenshot</button>
+                        <button class="btn btn-small btn-warning" id="persistBtn">Try persistence</button>
+                        <button class="btn btn-small" id="copyTranscriptBtn">Copy transcript</button>
+                        <button class="btn btn-small" id="saveTranscriptBtn">Save transcript</button>
+                        <button class="btn btn-small" id="clearTranscriptBtn">Clear View</button>
+                        <button class="btn btn-small btn-danger" id="killAgentBtn">Kill agent</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="terminal-workspace container">
+            <section class="terminal-main">
+                <div class="terminal-main-top">
+                    <div>
+                        <div class="terminal-main-title">Terminal</div>
+                        <div class="terminal-main-meta">
+                            <span id="terminalModeLabel">Mode: checking...</span>
+                            <span class="terminal-meta-divider">•</span>
+                            <span id="sessionIdLabel">Session: pending</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terminal-screen terminal">
+                    <div class="terminal-output" id="terminalOutput">
+                        <div class="text-dim">[Connecting to agent...]</div>
+                    </div>
+                    <div class="terminal-input-area">
+                        <span class="connection-status connected" id="statusIndicator">🟢</span>
+                        <span class="terminal-prompt">$</span>
+                        <input
+                            type="text"
+                            class="terminal-input"
+                            id="commandInput"
+                            placeholder="Enter a command..."
+                            autocomplete="off"
+                        >
+                        <button class="btn btn-small btn-primary" id="sendBtn">Send</button>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="terminal-sidebar">
+                <div class="terminal-sidebar-card">
+                    <div class="sidebar-card-title">Agent details</div>
+                    <div class="agent-identity-grid">
+                        <div class="agent-identity-item">
+                            <div class="identity-label">Hostname</div>
+                            <div class="identity-value" id="agentHostname">-</div>
+                        </div>
+                        <div class="agent-identity-item">
+                            <div class="identity-label">User</div>
+                            <div class="identity-value" id="agentUser">-</div>
+                        </div>
+                        <div class="agent-identity-item">
+                            <div class="identity-label">Platform</div>
+                            <div class="identity-value" id="agentOS">-</div>
+                        </div>
+                        <div class="agent-identity-item">
+                            <div class="identity-label">Internal IP</div>
+                            <div class="identity-value" id="agentIP">-</div>
+                        </div>
+                        <div class="agent-identity-item">
+                            <div class="identity-label">Uptime</div>
+                            <div class="identity-value" id="agentUptime">-</div>
+                        </div>
+                        <div class="agent-identity-item">
+                            <div class="identity-label">Callback</div>
+                            <div class="identity-value" id="agentCallback">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terminal-sidebar-card">
+                    <div class="card-header" style="margin-bottom: 14px; padding-bottom: 0; border-bottom: none;">
+                        <div class="sidebar-card-title" style="margin-bottom: 0;">Shell sessions</div>
+                        <div class="session-summary" id="sessionSummary">Waiting for shell sessions...</div>
+                    </div>
+                    <div class="history-list-helper">Create multiple shells, switch between them, and keep a separate transcript for each one</div>
+                    <div class="session-stack" id="sessionList">
+                        <div class="history-item">
+                            <div class="history-command">No shell sessions yet</div>
+                            <div class="history-meta">Once the interactive transport is ready, new sessions will appear here</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terminal-sidebar-card">
+                    <div class="sidebar-card-title">File operations</div>
+                    <div class="action-stack">
+                        <div class="action-group">
+                            <label for="downloadPath">Download a remote file</label>
+                            <input type="text" id="downloadPath" placeholder="/etc/hosts">
+                            <button class="btn btn-small btn-info" id="downloadFileBtn">Queue download</button>
+                        </div>
+                        <div class="action-group">
+                            <label for="uploadPath">Upload a local file</label>
+                            <input type="text" id="uploadPath" placeholder="/tmp/operator-payload.bin">
+                            <input type="file" id="uploadFileInput">
+                            <button class="btn btn-small btn-primary" id="uploadFileBtn">Upload to agent</button>
+                        </div>
+                        <div class="action-group">
+                            <label for="sleepInterval">Adjust callback interval</label>
+                            <input type="number" id="sleepInterval" min="1" max="3600" placeholder="5">
+                            <button class="btn btn-small" id="sleepBtn">Update sleep</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terminal-sidebar-card">
+                    <div class="sidebar-card-title">Artifacts</div>
+                    <div class="artifact-panel" id="artifactPanel">
+                        <div class="artifact-empty">
+                            Screenshots, downloaded files, and upload confirmations will appear here as soon as the agent responds
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terminal-sidebar-card">
+                    <div class="sidebar-card-title">Quick actions</div>
+                    <div class="preset-grid" id="terminalPresetGrid">
+                        <button class="btn btn-small terminal-preset" data-terminal-command="whoami">whoami</button>
+                        <button class="btn btn-small terminal-preset" data-terminal-command="hostname">hostname</button>
+                        <button class="btn btn-small terminal-preset" data-terminal-command="pwd">pwd</button>
+                        <button class="btn btn-small terminal-preset" data-terminal-command="!info">!info</button>
+                        <button class="btn btn-small terminal-preset" data-terminal-command="!screenshot">!screenshot</button>
+                        <button class="btn btn-small terminal-preset" data-terminal-command="!sleep 30">!sleep 30</button>
+                    </div>
+                </div>
+
+                <div class="terminal-sidebar-card">
+                    <div class="card-header" style="margin-bottom: 14px; padding-bottom: 0; border-bottom: none;">
+                        <div class="sidebar-card-title" style="margin-bottom: 0;">Command history</div>
+                        <button class="btn btn-small" id="clearCommandHistoryBtn">Clear</button>
+                    </div>
+                    <div class="history-list-helper">Use ↑/↓ in the input or click any command below to load it back into the prompt</div>
+                    <div class="history-list" id="commandHistoryList">
+                        <div class="history-item">
+                            <div class="history-command">No commands yet</div>
+                            <div class="history-meta">Commands sent from this workspace will be saved locally for this agent</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terminal-sidebar-card">
+                    <div class="card-header" style="margin-bottom: 14px; padding-bottom: 0; border-bottom: none;">
+                        <div class="sidebar-card-title" style="margin-bottom: 0;">Recent task history</div>
+                        <button class="btn btn-small" id="refreshHistoryBtn">Refresh</button>
+                    </div>
+                    <div class="history-list" id="recentHistoryList">
+                        <div class="history-item">
+                            <div class="history-command">Loading recent task history...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terminal-sidebar-card">
+                    <div class="sidebar-card-title">Command guide</div>
+                    <div class="terminal-help-grid">
+                        <div class="terminal-help-item"><code>!info</code>Refresh target details and sync the sidebar</div>
+                        <div class="terminal-help-item"><code>!download /path</code>Pull a file and save it from the artifact panel</div>
+                        <div class="terminal-help-item"><code>!upload</code>Use the upload form to push a local file to a remote path</div>
+                        <div class="terminal-help-item"><code>!screenshot</code>Capture the screen and preview it inline</div>
+                        <div class="terminal-help-item"><code>!persist</code>Try the agent's OS-specific persistence method</div>
+                        <div class="terminal-help-item"><code>!sleep 30</code>Change the beacon interval without leaving the session</div>
+                        <div class="terminal-help-item"><code>!kill</code>Terminate the agent after confirming the action</div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <div class="modal terminal-history-modal" id="terminalHistoryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Full terminal history</h3>
+            </div>
+            <div class="modal-body">
+                <div class="terminal-history-toolbar">
+                    <div class="terminal-history-summary" id="fullHistorySummary">Loading the full command archive...</div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="btn btn-small" id="refreshFullHistoryBtn">Refresh</button>
+                        <button class="btn btn-small" id="closeFullHistoryBtn">Close</button>
+                    </div>
+                </div>
+                <div class="terminal-history-list" id="fullHistoryList">
+                    <div class="terminal-history-empty">Open the archive to inspect every executed command and its latest stored output</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-small" id="loadMoreHistoryBtn">Load more</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/terminal.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!Auth.isAuthenticated()) {
+                window.location.href = '/login';
+                return;
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const agentId = urlParams.get('id');
+
+            if (!agentId) {
+                alert('No agent ID was provided.');
+                window.location.href = '/dashboard';
+                return;
+            }
+
+            Terminal.init(agentId);
+        });
+    </script>
+</body>
+</html>

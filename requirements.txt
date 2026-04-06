@@ -1,0 +1,3 @@
+# Root convenience requirements for Noxveil.
+# The server contains the project's Python dependencies.
+-r server/requirements.txt

@@ -47,11 +47,34 @@
 
 ### Option 1: Docker (Recommended)
 
+Start by copying the example environment file and replacing the placeholder secrets:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` and set at least these values before you start the stack:
+
+```dotenv
+JWT_SECRET_KEY=replace-with-openssl-rand-hex-32
+AGENT_AUTH_TOKEN=replace-with-openssl-rand-hex-24
+INITIAL_ADMIN_PASSWORD=change-me-now
+```
+
+Recommended secret generation:
+
+```bash
+openssl rand -hex 32   # JWT_SECRET_KEY
+openssl rand -hex 24   # AGENT_AUTH_TOKEN
+```
+
+`docker compose` reads `.env` automatically. If you run Noxveil directly instead of Docker, export the same variables into your shell first.
+
 ```bash
 # Build and start
 docker compose up --build
 
-# View logs
+# View logs (tunnel URL appears here once cloudflared is ready)
 docker compose logs -f noxveil
 
 # Stop
@@ -139,7 +162,7 @@ python -m server.main
 
 ```
 Username: admin
-Password: changemeplease (comes from INITIAL_ADMIN_PASSWORD or data/initial_admin_password.txt)
+Password: value from INITIAL_ADMIN_PASSWORD in `.env` (or `data/initial_admin_password.txt` if one was generated for you)
 ```
 
 > 🔒 The bootstrap password is generated or injected at startup. After first login, use Account security to enable MFA.
@@ -570,6 +593,8 @@ By using this software, you acknowledge that:
 - 🎨 Vanilla JavaScript - No framework dependencies
 - 🔐 PyJWT - Token authentication
 - 🔒 bcrypt - Password hashing
+
+**docker-compose.yml:** Edited and maintained by csoftware-arigpt. Copy `.env.example` to `.env`, replace the placeholder secrets, and then start the stack with Docker Compose.
 
 **Educational Purpose:** Noxveil is designed to help security professionals understand C2 infrastructure for defensive purposes.
 

@@ -139,7 +139,7 @@ python -m server.main
 
 ```
 Username: admin
-Password: changmeplease (comes from INITIAL_ADMIN_PASSWORD or data/initial_admin_password.txt)
+Password: changemeplease (comes from INITIAL_ADMIN_PASSWORD or data/initial_admin_password.txt)
 ```
 
 > 🔒 The bootstrap password is generated or injected at startup. After first login, use Account security to enable MFA.

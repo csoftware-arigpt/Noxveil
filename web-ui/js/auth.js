@@ -1,6 +1,7 @@
 const Auth = {
     TOKEN_KEY: "c2_token",
     REFRESH_KEY: "c2_refresh_token",
+    _refreshPromise: null,
 
     isAuthenticated() {
         return Boolean(this.getToken());
@@ -63,6 +64,19 @@ const Auth = {
     },
 
     async refreshToken() {
+        if (this._refreshPromise) {
+            return this._refreshPromise;
+        }
+
+        this._refreshPromise = this._doRefresh();
+        try {
+            return await this._refreshPromise;
+        } finally {
+            this._refreshPromise = null;
+        }
+    },
+
+    async _doRefresh() {
         const refreshToken = this.getRefreshToken();
         if (!refreshToken) {
             return false;

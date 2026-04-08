@@ -16,10 +16,23 @@ from server.security import decrypt_text, encrypt_text, generate_totp_secret, ge
 
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
-REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
-AGENT_TOKEN_EXPIRE_DAYS = int(os.getenv("AGENT_TOKEN_EXPIRE_DAYS", "30"))
-STAGER_TOKEN_EXPIRE_MINUTES = int(os.getenv("STAGER_TOKEN_EXPIRE_MINUTES", "15"))
+
+
+def _positive_int(env_name: str, default: int) -> int:
+    raw = os.getenv(env_name, "")
+    if not raw:
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
+ACCESS_TOKEN_EXPIRE_MINUTES = _positive_int("ACCESS_TOKEN_EXPIRE_MINUTES", 30)
+REFRESH_TOKEN_EXPIRE_DAYS = _positive_int("REFRESH_TOKEN_EXPIRE_DAYS", 7)
+AGENT_TOKEN_EXPIRE_DAYS = _positive_int("AGENT_TOKEN_EXPIRE_DAYS", 30)
+STAGER_TOKEN_EXPIRE_MINUTES = _positive_int("STAGER_TOKEN_EXPIRE_MINUTES", 15)
 
 security = HTTPBearer()
 

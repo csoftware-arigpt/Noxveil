@@ -17,14 +17,11 @@ services:
       - C2_PORT=1324
       - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD:-changemeplease}
       - ENABLE_TUNNEL=true
-      - JWT_SECRET_KEY=change-this-in-production-use-env-var
-      - AGENT_AUTH_TOKEN=agent-auth-token-change-me
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set in .env or environment}
+      - AGENT_AUTH_TOKEN=${AGENT_AUTH_TOKEN:?AGENT_AUTH_TOKEN must be set in .env or environment}
     restart: unless-stopped
     networks:
       - noxveil-network
-    # cloudflared is installed inside the container
-    # Tunnel URL is printed in docker logs
-
 networks:
   noxveil-network:
     driver: bridge

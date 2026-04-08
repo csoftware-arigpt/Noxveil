@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
@@ -86,18 +87,20 @@ async def bash_terminal_page_legacy(request: Request):
 
 @router.get("/css/{filename}")
 async def get_css(filename: str):
-    css_path = os.path.join(STATIC_DIR, "css", filename)
-    if not os.path.exists(css_path):
+    css_dir = Path(STATIC_DIR, "css").resolve()
+    css_path = css_dir.joinpath(filename).resolve()
+    if not css_path.is_relative_to(css_dir) or not css_path.is_file():
         raise HTTPException(status_code=404, detail="CSS file not found")
-    return FileResponse(css_path, media_type="text/css")
+    return FileResponse(str(css_path), media_type="text/css")
 
 
 @router.get("/js/{filename}")
 async def get_js(filename: str):
-    js_path = os.path.join(STATIC_DIR, "js", filename)
-    if not os.path.exists(js_path):
+    js_dir = Path(STATIC_DIR, "js").resolve()
+    js_path = js_dir.joinpath(filename).resolve()
+    if not js_path.is_relative_to(js_dir) or not js_path.is_file():
         raise HTTPException(status_code=404, detail="JS file not found")
-    return FileResponse(js_path, media_type="application/javascript")
+    return FileResponse(str(js_path), media_type="application/javascript")
 
 
 @router.get("/api/ui/tunnel-url")

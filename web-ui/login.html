@@ -368,7 +368,6 @@
             height: 200px;
         }
 
-        /* Input icons */
         .input-wrapper {
             position: relative;
         }
@@ -539,7 +538,8 @@
                                 placeholder="6-digit code from your authenticator app"
                                 inputmode="numeric"
                                 autocomplete="one-time-code"
-                                maxlength="12"
+                                maxlength="6"
+                                pattern="[0-9]{6}"
                             >
                             <span class="input-icon">123</span>
                         </div>
@@ -584,19 +584,17 @@
 
     <script src="/js/auth.js"></script>
     <script>
-        // Check if already logged in
         if (Auth.isAuthenticated()) {
             window.location.href = '/dashboard';
         }
 
-        // Handle login form submission
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const mfaInput = document.getElementById('mfaCode');
-            const mfaCode = mfaInput.value;
+            const mfaCode = mfaInput.value.replace(/\D/g, '').slice(0, 6);
             const mfaGroup = document.getElementById('mfaGroup');
             const mfaStatus = document.getElementById('mfaStatus');
             const mfaStatusText = document.getElementById('mfaStatusText');
@@ -618,11 +616,9 @@
                 }
             };
 
-            // Reset error state
             errorEl.classList.remove('show');
             errorText.textContent = '';
 
-            // Show loading state
             const originalBtnText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<span class="spinner"></span> Signing in...';
             submitBtn.disabled = true;
@@ -644,17 +640,14 @@
                 const detail = data && typeof data.detail === 'object' ? data.detail : null;
 
                 if (response.ok && data.access_token) {
-                    // Store tokens
                     Auth.setToken(data.access_token);
                     Auth.setRefreshToken(data.refresh_token);
 
-                    // Show success state
                     submitBtn.innerHTML = '✅ Signed in. Opening dashboard...';
                     submitBtn.style.background = 'var(--success)';
                     submitBtn.style.borderColor = 'var(--success)';
                     submitBtn.style.color = 'var(--bg-primary)';
 
-                    // Redirect to dashboard
                     setTimeout(() => {
                         window.location.href = '/dashboard';
                     }, 800);
@@ -672,11 +665,9 @@
                         setMfaVisibility(false);
                     }
 
-                    // Reset button
                     submitBtn.innerHTML = originalBtnText;
                     submitBtn.disabled = false;
 
-                    // Shake animation on error
                     document.querySelector('.login-box').animate([
                         { transform: 'translateX(0)' },
                         { transform: 'translateX(-10px)' },
@@ -688,7 +679,6 @@
                 errorText.textContent = 'We could not reach the server. Make sure Noxveil is running and try again.';
                 errorEl.classList.add('show');
                 
-                // Reset button
                 submitBtn.innerHTML = originalBtnText;
                 submitBtn.disabled = false;
             }
@@ -703,7 +693,6 @@
             });
         });
 
-        // Add enter key support for password field
         document.getElementById('password').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 document.getElementById('loginForm').requestSubmit();

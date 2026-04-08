@@ -477,7 +477,8 @@ code, pre {
 }
 
 .agent-card-selected {
-    box-shadow: 0 0 0 1px rgba(0, 255, 136, 0.45), 0 22px 48px rgba(0, 0, 0, 0.36);
+    box-shadow: 0 0 0 1.5px rgba(0, 255, 136, 0.5), 0 0 20px rgba(0, 255, 136, 0.08), 0 22px 48px rgba(0, 0, 0, 0.36);
+    border-color: rgba(0, 255, 136, 0.35);
 }
 
 .agent-card-empty,
@@ -733,6 +734,20 @@ input, select, textarea {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235d728f' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+}
+
+select option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
 input:focus, select:focus, textarea:focus {
     border-color: var(--text-primary);
     box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
@@ -743,8 +758,87 @@ input::placeholder, textarea::placeholder {
 }
 
 input[type="checkbox"] {
-    width: auto;
+    width: 16px;
+    height: 16px;
+    appearance: none;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border-light);
+    border-radius: 4px;
     cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+}
+
+input[type="checkbox"]:checked {
+    background: var(--text-primary);
+    border-color: var(--text-primary);
+}
+
+input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 4.5px;
+    top: 1px;
+    width: 4px;
+    height: 9px;
+    border: solid var(--bg-primary);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+input[type="checkbox"]:focus-visible {
+    box-shadow: 0 0 0 3px rgba(125, 243, 208, 0.25);
+}
+
+.toggle-switch {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.toggle-switch .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border-light);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.toggle-switch .toggle-track::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    background: var(--text-dim);
+    border-radius: 50%;
+    transition: all var(--transition-fast);
+}
+
+.toggle-switch input:checked + .toggle-track {
+    background: rgba(125, 243, 208, 0.2);
+    border-color: var(--text-primary);
+}
+
+.toggle-switch input:checked + .toggle-track::after {
+    transform: translateX(18px);
+    background: var(--text-primary);
+}
+
+.toggle-switch input:focus-visible + .toggle-track {
+    box-shadow: 0 0 0 3px rgba(125, 243, 208, 0.25);
 }
 
 
@@ -942,7 +1036,6 @@ tr:last-child td {
     box-shadow: var(--shadow-lg);
 }
 
-/* deploy-panel carries .card but keeps its own gradient */
 .card.deploy-panel,
 .card.deploy-panel:hover {
     background:
@@ -984,7 +1077,7 @@ tr:last-child td {
     font-family: var(--font-mono);
     font-size: clamp(0.85rem, 2vw, 0.95rem);
     border-left: 4px solid;
-    animation: slideIn 0.3s ease;
+    animation: slideIn 0.3s ease, fadeOut 0.4s ease 4s forwards;
 }
 
 @keyframes slideIn {
@@ -1367,10 +1460,11 @@ tr:last-child td {
     display: inline-block;
     width: 20px;
     height: 20px;
-    border: 2px solid var(--text-dim);
+    border: 2px solid rgba(125, 243, 208, 0.15);
     border-top-color: var(--text-primary);
+    border-right-color: var(--text-primary);
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    animation: spin 0.7s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 }
 
 .quick-cmd-status.warning {
@@ -1424,13 +1518,27 @@ tr:last-child td {
 }
 
 .dashboard-shell .deploy-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
     margin-top: 14px;
 }
 
 .dashboard-shell .deploy-card {
     height: 100%;
+}
+
+.dashboard-shell .deploy-card-stealth {
+    border-color: rgba(255, 184, 77, 0.28);
+    background:
+        linear-gradient(180deg, rgba(255, 184, 77, 0.08), rgba(255, 184, 77, 0.02)),
+        rgba(255, 255, 255, 0.03);
+}
+
+.dashboard-shell .deploy-command-stealth {
+    border-color: rgba(255, 184, 77, 0.24);
+    background:
+        linear-gradient(180deg, rgba(255, 184, 77, 0.08), rgba(255, 184, 77, 0.02)),
+        var(--bg-primary);
 }
 
 .dashboard-shell .activity-feed {
@@ -1506,6 +1614,35 @@ tr:last-child td {
     50% { opacity: 0.3; }
 }
 
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(20px); }
+}
+
+
+:focus-visible {
+    outline: 2px solid var(--text-primary);
+    outline-offset: 2px;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: none;
+}
+
+.btn:focus-visible {
+    outline: 2px solid var(--text-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(125, 243, 208, 0.15);
+}
+
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-dim) var(--bg-primary);
+}
 
 ::-webkit-scrollbar {
     width: 10px;

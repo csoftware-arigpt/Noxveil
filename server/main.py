@@ -213,7 +213,7 @@ def _run_interactive_mode():
             print_local_banner()
 
     def run_server():
-        uvicorn.run("server.main:app", host="0.0.0.0", port=PORT, reload=False, log_level="error")
+        uvicorn.run("server.main:app", host="0.0.0.0", port=PORT, reload=False, log_level="info")
 
     server_thread = threading.Thread(target=run_server, daemon=True)
     server_thread.start()

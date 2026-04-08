@@ -48,7 +48,7 @@ print_error() {
 
 
 NO_TUNNEL=false
-while [[ $
+while [[ $# -gt 0 ]]; do
     case $1 in
         --no-tunnel)
             NO_TUNNEL=true

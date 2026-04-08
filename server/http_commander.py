@@ -1,18 +1,16 @@
 
 
 
-import threading
+import os
 import queue
 import sys
-import os
 import time
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional
 
 
-cmd_queue = queue.Queue()      
-out_queue = queue.Queue()      
-agent_info: Dict[str, Any] = {}  
+cmd_queue = queue.Queue()
+out_queue = queue.Queue()
 
 
 class AgentSession:
@@ -126,7 +124,7 @@ def commander():
                     print_colored(f"  PWD: {session.pwd}", "white")
                     print_colored(f"  Last Seen: {session.last_seen}", "white")
                 elif local_cmd == "clear":
-                    os.system("clear")
+                    print("\033[2J\033[H", end="", flush=True)
                 elif local_cmd == "help":
                     print_colored("\nLocal Commands (prefix with !):", "cyan")
                     print_colored("  !info   - Show agent information", "white")

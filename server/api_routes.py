@@ -974,6 +974,7 @@ async def delete_agent(
     agent = await _get_agent_or_404(db, agent_id)
     await db.delete(agent)
     await db.commit()
+    agent_task_locks.pop(agent_id, None)
     await _log_audit_event(
         "agent.deleted",
         actor=current_user,

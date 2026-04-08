@@ -162,7 +162,7 @@ python -m server.main
 
 ```
 Username: admin
-Password: value from INITIAL_ADMIN_PASSWORD in `.env` (or `data/initial_admin_password.txt` if one was generated for you)
+Password: changemeplease (comes from INITIAL_ADMIN_PASSWORD or data/initial_admin_password.txt)
 ```
 
 > 🔒 The bootstrap password is generated or injected at startup. After first login, use Account security to enable MFA.

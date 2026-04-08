@@ -194,13 +194,21 @@ class SlidingWindowRateLimiter:
 
 rate_limiter = SlidingWindowRateLimiter()
 
+_TRUSTED_PROXIES: set[str] = {
+    ip.strip()
+    for ip in os.getenv("TRUSTED_PROXY_IPS", "127.0.0.1,::1").split(",")
+    if ip.strip()
+}
+
 
 def get_client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    if request.client and request.client.host:
-        return request.client.host
+    client_host = request.client.host if request.client else None
+    if client_host in _TRUSTED_PROXIES:
+        forwarded = request.headers.get("x-forwarded-for", "")
+        if forwarded:
+            return forwarded.split(",")[0].strip()
+    if client_host:
+        return client_host
     return "unknown"
 
 

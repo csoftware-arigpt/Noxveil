@@ -3,18 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noxveil - Server Workspace</title>
+    <title>Noxveil // server shell</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            background: var(--ink-0);
+            color: var(--text-light);
             font-family: var(--font-sans);
             height: 100vh;
             display: flex;
@@ -23,73 +19,91 @@
         }
 
         .header {
-            background: rgba(17, 24, 39, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            padding: clamp(12px, 2.5vw, 15px) clamp(15px, 3vw, 20px);
+            background: var(--ink-1);
+            border-bottom: 1px solid var(--line);
+            padding: 12px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 15px;
-            box-shadow: var(--shadow);
+            gap: 14px;
+            position: relative;
+        }
+
+        .header::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; bottom: -1px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--signal-edge) 30%, var(--signal-edge) 70%, transparent);
+            opacity: 0.5;
         }
 
         .header h1 {
-            font-size: clamp(1rem, 3vw, 1.25rem);
-            display: flex;
+            font-family: var(--font-mono);
+            font-size: 0.94rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-light);
+            display: inline-flex;
             align-items: center;
             gap: 10px;
             margin: 0;
         }
 
+        .header h1::before {
+            content: "▍";
+            color: var(--signal);
+            font-size: 1.1rem;
+        }
+
         .header-actions {
             display: flex;
             align-items: center;
-            gap: clamp(10px, 2vw, 15px);
+            gap: 10px;
             flex-wrap: wrap;
         }
 
         .status {
-            font-size: clamp(0.7rem, 2vw, 0.8rem);
-            padding: 5px 12px;
-            border-radius: var(--radius-sm);
-            background: var(--bg-card);
             font-family: var(--font-mono);
+            font-size: 0.74rem;
+            padding: 5px 10px;
+            border-radius: var(--r-3);
+            background: var(--ink-2);
             display: flex;
             align-items: center;
             gap: 6px;
-            border: 1px solid var(--border);
+            border: 1px solid var(--line);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
         }
 
         .status.connected {
-            background: var(--success-bg);
-            border-color: var(--success);
-            color: var(--success);
+            background: var(--signal-soft);
+            border-color: var(--signal-edge);
+            color: var(--signal);
         }
 
         .status.disconnected {
-            background: var(--danger-bg);
-            border-color: var(--danger);
-            color: var(--danger);
+            background: var(--alarm-soft);
+            border-color: var(--alarm-edge);
+            color: var(--alarm);
         }
 
-        .status-indicator {
-            width: 8px;
-            height: 8px;
+        .status .status-indicator {
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: currentColor;
+            box-shadow: 0 0 8px currentColor;
             animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
         }
 
         .terminal-container {
             flex: 1;
-            padding: clamp(10px, 2vw, 15px);
+            padding: 14px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -98,44 +112,51 @@
         .session-toolbar {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 6px;
             margin-bottom: 12px;
-        }
-
-        .session-toolbar .btn {
-            min-width: 0;
         }
 
         .shell-preset {
             appearance: none;
-            border: 1px solid rgba(115, 199, 255, 0.28);
-            background: rgba(115, 199, 255, 0.08);
+            border: 1px solid var(--line);
+            background: var(--ink-1);
             color: var(--text-light);
-            border-radius: 999px;
-            padding: 7px 11px;
+            border-radius: var(--r-3);
+            padding: 6px 10px;
             font-family: var(--font-mono);
-            font-size: 0.78rem;
+            font-size: 0.74rem;
             cursor: pointer;
+            transition: border-color var(--transition-fast), color var(--transition-fast);
+        }
+
+        .shell-preset::before {
+            content: "$ ";
+            color: var(--text-dim);
+        }
+
+        .shell-preset:hover {
+            border-color: var(--signal-edge);
+            color: var(--signal);
         }
 
         #terminal {
             flex: 1;
-            background: #050505;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: clamp(12px, 2.5vw, 15px);
+            background: var(--ink-0);
+            border: 1px solid var(--line);
+            border-radius: var(--r-4);
+            padding: 14px;
             overflow-y: auto;
             font-family: var(--font-mono);
-            font-size: clamp(13px, 2.5vw, 14px);
-            line-height: 1.5;
-            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+            font-size: 13px;
+            line-height: 1.55;
+            position: relative;
         }
 
         .output-line {
             white-space: pre-wrap;
             word-break: break-all;
-            margin-bottom: 5px;
-            animation: fadeIn 0.2s ease;
+            margin-bottom: 4px;
+            animation: fadeIn 0.18s ease;
         }
 
         .output-chunk {
@@ -144,41 +165,32 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(2px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .output-line.error {
-            color: var(--danger);
-        }
-
-        .output-line.success {
-            color: var(--text-primary);
-        }
-
-        .output-line.info {
-            color: var(--info);
-        }
-
-        .output-line.warning {
-            color: var(--warning);
-        }
+        .output-line.error { color: var(--alarm); }
+        .output-line.success { color: var(--text-light); }
+        .output-line.info { color: var(--info); }
+        .output-line.warning { color: var(--warn); }
 
         .input-line {
             display: flex;
             align-items: center;
             margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: var(--r-3);
+            background: var(--ink-1);
             gap: 10px;
         }
 
         .prompt {
-            color: var(--text-primary);
+            color: var(--signal);
             white-space: nowrap;
             font-weight: 600;
             font-family: var(--font-mono);
-            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+            font-size: 13px;
         }
 
         #commandInput {
@@ -187,159 +199,83 @@
             border: none;
             color: var(--text-light);
             font-family: var(--font-mono);
-            font-size: clamp(13px, 2.5vw, 14px);
+            font-size: 13px;
             outline: none;
             min-width: 0;
+            padding: 0;
         }
 
         .input-line.secret-mode {
-            border-top-color: rgba(255, 165, 2, 0.4);
-            box-shadow: inset 0 1px 0 rgba(255, 165, 2, 0.08);
+            border-color: var(--warn-edge);
+            background: var(--warn-soft);
         }
 
         .input-line.secret-mode .prompt {
-            color: var(--warning);
-            text-shadow: none;
-        }
-
-        .back-btn {
-            background: transparent;
-            border: 1px solid var(--text-primary);
-            color: var(--text-primary);
-            padding: 6px 14px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: clamp(0.75rem, 2vw, 0.85rem);
-            font-family: var(--font-mono);
-            border-radius: var(--radius-sm);
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .back-btn:hover {
-            background: var(--text-primary);
-            color: var(--bg-primary);
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
-        }
-
-        #terminal::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        #terminal::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-            border-radius: var(--radius-sm);
-        }
-
-        #terminal::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, var(--text-dim), var(--text-secondary));
-            border-radius: var(--radius-sm);
-        }
-
-        #terminal::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(180deg, var(--text-secondary), var(--text-primary));
-        }
-
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .header h1 {
-                justify-content: center;
-            }
-
-            .header-actions {
-                justify-content: center;
-                width: 100%;
-            }
-
-            .header-actions .back-btn,
-            .header-actions .status {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .input-line {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .prompt {
-                text-align: center;
-            }
+            color: var(--warn);
         }
 
         .history-indicator {
             position: fixed;
-            bottom: 20px;
+            bottom: 16px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: var(--radius);
+            background: var(--ink-2);
+            border: 1px solid var(--line);
+            padding: 6px 12px;
+            border-radius: var(--r-3);
             font-family: var(--font-mono);
-            font-size: 0.8rem;
+            font-size: 0.74rem;
             color: var(--text-muted);
             display: none;
             z-index: 1000;
         }
 
-        .history-indicator.show {
-            display: block;
+        .history-indicator.show { display: block; }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; align-items: stretch; }
+            .header h1 { justify-content: center; }
+            .header-actions { justify-content: center; width: 100%; }
+            .header-actions .status { width: 100%; justify-content: center; }
+            .input-line { flex-direction: column; align-items: stretch; }
+            .prompt { text-align: center; }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>
-            <span>💻</span>
-            <span>Noxveil server shell</span>
-        </h1>
+        <h1>NOXVEIL // SERVER SHELL</h1>
         <div class="header-actions">
             <span class="status disconnected" id="connectionStatus">
                 <span class="status-indicator"></span>
-                <span>Disconnected</span>
+                <span>disconnected</span>
             </span>
-            <a href="/dashboard" class="back-btn">
-                <span>←</span>
-                <span>Back</span>
-            </a>
+            <a href="/dashboard" class="btn btn-small">← back</a>
         </div>
     </div>
 
     <div class="terminal-container">
         <div class="session-toolbar" id="sessionToolbar">
-            <button class="btn btn-small" id="copySessionBtn">Copy transcript</button>
-            <button class="btn btn-small" id="saveSessionBtn">Save transcript</button>
-            <button class="btn btn-small" id="clearSessionBtn">Clear View</button>
-            <button class="btn btn-small btn-warning" id="reconnectShellBtn">Reconnect</button>
+            <button class="btn btn-small" id="copySessionBtn">copy log</button>
+            <button class="btn btn-small" id="saveSessionBtn">save log</button>
+            <button class="btn btn-small" id="clearSessionBtn">clear</button>
+            <button class="btn btn-small btn-warning" id="reconnectShellBtn">reconnect</button>
             <button class="shell-preset" data-shell-command="pwd">pwd</button>
             <button class="shell-preset" data-shell-command="whoami">whoami</button>
             <button class="shell-preset" data-shell-command="hostname">hostname</button>
             <button class="shell-preset" data-shell-command="sudo -l">sudo -l</button>
         </div>
         <div id="terminal">
-            <div class="output-line info">🔌 Connecting to the Noxveil server shell...</div>
+            <div class="output-line info">// connecting to noxveil server shell...</div>
         </div>
         <div class="input-line">
             <span class="prompt" id="prompt">server@noxveil:~$</span>
-            <input 
-                type="text" 
-                id="commandInput" 
-                placeholder="Enter a command..." 
-                autocomplete="off"
-                autofocus
-            >
+            <input type="text" id="commandInput" placeholder="enter a command..." autocomplete="off" autofocus>
         </div>
     </div>
 
     <div class="history-indicator" id="historyIndicator">
-        History: <span id="historyPosition">0</span>/<span id="historyTotal">0</span>
+        history: <span id="historyPosition">0</span>/<span id="historyTotal">0</span>
     </div>
 
     <script src="/js/auth.js"></script>
@@ -376,10 +312,7 @@
         }
 
         function appendStream(text, type = "success") {
-            if (!text) {
-                return;
-            }
-
+            if (!text) return;
             const span = document.createElement("span");
             span.className = `output-chunk ${type}`;
             span.textContent = text;
@@ -391,7 +324,7 @@
         function updateSecretInputMode(enabled) {
             awaitingSecretInput = enabled;
             commandInput.type = enabled ? "password" : "text";
-                commandInput.placeholder = enabled ? "Enter the sudo password..." : "Enter a command...";
+            commandInput.placeholder = enabled ? "sudo password..." : "enter a command...";
             inputLine.classList.toggle("secret-mode", enabled);
         }
 
@@ -445,8 +378,8 @@
                 isConnected = true;
                 reconnectAttempts = 0;
                 connectionStatus.className = "status connected";
-                connectionStatus.innerHTML = `<span class="status-indicator"></span><span>Connected</span>`;
-                addOutput("Connected to the Noxveil server shell", "info");
+                connectionStatus.innerHTML = `<span class="status-indicator"></span><span>connected</span>`;
+                addOutput("connected to noxveil server shell", "info");
                 commandInput.focus();
             };
 
@@ -480,15 +413,15 @@
             ws.onclose = function() {
                 isConnected = false;
                 connectionStatus.className = "status disconnected";
-                connectionStatus.innerHTML = `<span class="status-indicator"></span><span>Disconnected</span>`;
+                connectionStatus.innerHTML = `<span class="status-indicator"></span><span>disconnected</span>`;
                 updateSecretInputMode(false);
 
                 if (reconnectAttempts < maxReconnectAttempts) {
                     reconnectAttempts += 1;
-                        addOutput(`Connection lost. Reconnecting (${reconnectAttempts}/${maxReconnectAttempts})...`, "warning");
+                    addOutput(`connection lost. reconnecting (${reconnectAttempts}/${maxReconnectAttempts})...`, "warning");
                     setTimeout(connect, Math.min(1000 * reconnectAttempts, 5000));
                 } else {
-                    addOutput("The reconnect limit was reached. Refresh the page to try again", "error");
+                    addOutput("reconnect limit reached. refresh the page to try again", "error");
                 }
             };
 
@@ -500,18 +433,18 @@
         function copySessionTranscript() {
             const payload = sessionTranscript.join("");
             if (!payload.trim()) {
-                addOutput("The transcript is empty", "error");
+                addOutput("transcript is empty", "error");
                 return;
             }
             navigator.clipboard.writeText(payload)
-                .then(() => addOutput("Transcript copied to the clipboard", "info"))
-                .catch(() => addOutput("Could not copy the transcript", "error"));
+                .then(() => addOutput("transcript copied to clipboard", "info"))
+                .catch(() => addOutput("could not copy transcript", "error"));
         }
 
         function saveSessionTranscript() {
             const payload = sessionTranscript.join("");
             if (!payload.trim()) {
-                addOutput("The transcript is empty", "error");
+                addOutput("transcript is empty", "error");
                 return;
             }
             const blob = new Blob([payload], { type: "text/plain;charset=utf-8" });
@@ -523,25 +456,21 @@
             link.click();
             link.remove();
             setTimeout(() => window.URL.revokeObjectURL(url), 1000);
-            addOutput("Transcript saved", "info");
+            addOutput("transcript saved", "info");
         }
 
         function clearSessionView() {
             terminal.innerHTML = "";
             sessionTranscript = [];
-            addOutput("Terminal view cleared", "info");
+            addOutput("terminal view cleared", "info");
         }
 
         function executeCommand(command) {
-            if (!isConnected) {
-                return;
-            }
+            if (!isConnected) return;
 
             const value = String(command ?? "");
             const trimmed = value.trim();
-            if (!awaitingSecretInput && !trimmed) {
-                return;
-            }
+            if (!awaitingSecretInput && !trimmed) return;
 
             if (!awaitingSecretInput && trimmed) {
                 addToHistory(trimmed);
@@ -563,9 +492,7 @@
                 commandInput.value = "";
             } else if (event.key === "ArrowUp") {
                 event.preventDefault();
-                if (awaitingSecretInput) {
-                    return;
-                }
+                if (awaitingSecretInput) return;
                 if (historyIndex > 0) {
                     historyIndex -= 1;
                     commandInput.value = commandHistory[historyIndex];
@@ -573,9 +500,7 @@
                 }
             } else if (event.key === "ArrowDown") {
                 event.preventDefault();
-                if (awaitingSecretInput) {
-                    return;
-                }
+                if (awaitingSecretInput) return;
                 if (historyIndex < commandHistory.length - 1) {
                     historyIndex += 1;
                     commandInput.value = commandHistory[historyIndex];
@@ -604,20 +529,14 @@
         document.getElementById("reconnectShellBtn").addEventListener("click", () => {
             reconnectAttempts = 0;
             if (ws) {
-                try {
-                    ws.close();
-                } catch (_error) {
-                    connect();
-                }
+                try { ws.close(); } catch (_error) { connect(); }
             } else {
                 connect();
             }
         });
         document.getElementById("sessionToolbar").addEventListener("click", (event) => {
             const preset = event.target.closest("[data-shell-command]");
-            if (!preset) {
-                return;
-            }
+            if (!preset) return;
             commandInput.value = preset.getAttribute("data-shell-command") || "";
             commandInput.focus();
         });
@@ -635,11 +554,11 @@
 
         connect();
         setTimeout(() => {
-            addOutput("Tips:", "info");
-            addOutput("  Use ↑/↓ arrows for command history", "success");
-            addOutput("  Press Ctrl+L to clear the terminal", "success");
-            addOutput("  Press Ctrl+C to interrupt the running command", "success");
-            addOutput("  Sudo/password prompts switch the input into hidden mode", "warning");
+            addOutput("// tips:", "info");
+            addOutput("  ↑/↓  command history", "success");
+            addOutput("  ctrl+l  clear terminal", "success");
+            addOutput("  ctrl+c  interrupt running command", "success");
+            addOutput("  sudo prompts switch input to hidden mode", "warning");
         }, 500);
     </script>
 </body>

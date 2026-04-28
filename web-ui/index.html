@@ -3,276 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noxveil - Dashboard</title>
+    <title>Noxveil // dashboard</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .deploy-panel { position: relative; }
-        .deploy-command { cursor: pointer; user-select: all; }
-        .deploy-command:hover { border-color: var(--text-primary); }
+        .deploy-command { user-select: all; }
 
-        .copy-feedback {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: var(--success-bg);
-            border: 1px solid var(--success);
-            color: var(--success);
-            padding: 12px 20px;
-            border-radius: var(--radius);
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-            display: none;
-            animation: slideInRight 0.3s ease;
-            z-index: 3000;
-        }
-        .copy-feedback.show { display: flex; align-items: center; gap: 8px; }
-
-        .deploy-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 14px;
-            margin-top: 16px;
-        }
-
-        .command-deck-single { display: grid; gap: 18px; }
-
-        .command-deck-inline {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 14px;
-        }
-
-        .command-deck-inline-card {
-            padding: 14px 16px;
-            border-radius: 18px;
-            border: 1px solid rgba(74, 85, 104, 0.45);
-            background: rgba(255, 255, 255, 0.03);
-        }
-        .command-deck-inline-card .command-deck-section { margin-bottom: 8px; }
-
-        .deploy-card {
-            padding: 16px;
-            border-radius: 18px;
-            border: 1px solid rgba(74, 85, 104, 0.45);
-            background: rgba(255, 255, 255, 0.03);
-        }
-        .deploy-card-title {
-            color: var(--text-light);
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            margin-bottom: 10px;
-        }
-        .deploy-card-copy {
-            color: var(--text-dim);
-            font-size: 0.82rem;
-            line-height: 1.6;
-            margin: -2px 0 12px;
-        }
-        .deploy-card-actions {
-            display: flex;
+        .dashboard-shell .deploy-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-
-        .security-summary { display: grid; gap: 12px; }
-        .security-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 999px;
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            border: 1px solid rgba(74, 85, 104, 0.45);
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--text-light);
-        }
-        .security-pill.enabled {
-            color: var(--success);
-            border-color: rgba(0, 255, 136, 0.35);
-            background: rgba(0, 255, 136, 0.08);
-        }
-        .security-pill.disabled {
-            color: var(--warning);
-            border-color: rgba(255, 165, 2, 0.35);
-            background: rgba(255, 165, 2, 0.08);
-        }
-
-        .security-meta { color: var(--text-muted); font-size: 0.88rem; line-height: 1.7; }
-
-        .mfa-secret-block {
-            display: none;
-            margin-top: 10px;
-            padding: 14px;
-            border-radius: 16px;
-            border: 1px solid rgba(0, 212, 255, 0.22);
-            background: rgba(0, 212, 255, 0.05);
-            word-break: break-word;
-        }
-        .mfa-secret-block.show { display: block; }
-        .mfa-secret-code { margin-top: 8px; font-family: var(--font-mono); color: var(--text-light); }
-
-        .activity-feed {
-            display: grid;
-            gap: 12px;
-            max-height: 520px;
-            overflow-y: auto;
-            padding-right: 6px;
-        }
-        .activity-item {
-            padding: 14px 15px;
-            border-radius: 16px;
-            border: 1px solid rgba(74, 85, 104, 0.45);
-            background: rgba(255, 255, 255, 0.03);
-        }
-        .activity-event { color: var(--text-light); font-size: 0.92rem; }
-        .activity-meta {
-            margin-top: 6px;
-            color: var(--text-dim);
-            font-family: var(--font-mono);
-            font-size: 0.76rem;
-            line-height: 1.6;
-        }
-
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(100px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .agent-row-alive { border-left: 3px solid var(--success); }
-        .agent-row-dead { border-left: 3px solid var(--danger); }
-        .agent-row-alive:hover { background: rgba(0, 255, 136, 0.05); }
-        .agent-row-dead:hover { background: rgba(255, 71, 87, 0.05); }
-
-        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
-        .empty-state-icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.5; }
-        .empty-state h3 { color: var(--text-muted); margin-bottom: 10px; }
-
-        .stat-number { font-weight: 700; transition: all 0.3s; }
-        .stat-number.updated { color: var(--text-light); text-shadow: 0 0 10px var(--text-primary); }
-
-        .quick-cmd-status {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            padding: 8px 12px;
-            border-radius: var(--radius-sm);
-            margin-top: 10px;
-            display: none;
-        }
-        .quick-cmd-status.show { display: block; animation: fadeIn 0.2s ease; }
-        .quick-cmd-status.success { background: var(--success-bg); color: var(--success); }
-        .quick-cmd-status.error { background: var(--danger-bg); color: var(--danger); }
-        .quick-cmd-status.info { background: var(--info-bg); color: var(--info); }
-        .quick-cmd-status.warning { background: var(--warning-bg); color: var(--warning); }
-
-        .modal-body label {
-            display: block;
-            color: var(--text-secondary);
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            margin-bottom: 8px;
-        }
-        .modal-body textarea,
-        .modal-body input { margin-bottom: 15px; }
-
-        .deploy-expiry-note {
             margin-top: 12px;
-            font-family: var(--font-mono);
-            color: var(--text-dim);
+        }
+
+        .dashboard-shell .deploy-card { height: 100%; }
+        .dashboard-shell .activity-feed { max-height: 440px; }
+
+        @media (max-width: 1280px) {
+            .dashboard-shell .deploy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 720px) {
+            .dashboard-shell .deploy-grid { grid-template-columns: 1fr; }
         }
 
         #quickCommand { flex: 1; min-width: 0; }
+        .deploy-command-bash { background: var(--ink-0); }
 
-        .deploy-command-bash { background: var(--bg-hover); }
-
-        .deploy-spinner {
-            width: 14px;
-            height: 14px;
-            border-width: 2px;
-        }
-
-        .form-hint {
-            color: var(--text-dim);
-            display: block;
-            margin-top: 5px;
-            font-size: 0.82rem;
-        }
-
-        .loading-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 5000;
-        }
-        .loading-overlay.show { display: flex; }
-        .loading-content { text-align: center; color: var(--text-primary); }
-        .loading-content .spinner { width: 50px; height: 50px; border-width: 3px; margin-bottom: 20px; }
-        .loading-content p { font-family: var(--font-mono); color: var(--text-secondary); }
-
-        @media (max-width: 1024px) {
-            table { font-size: 0.8rem; }
-            th, td { padding: 8px 10px; }
-            .navbar-stats { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-        }
-
-        @media (max-width: 768px) {
-            .table-container { overflow-x: auto; }
-            table { min-width: 900px; }
-            .navbar-actions { flex-direction: column; width: 100%; }
-            .navbar-actions .btn,
-            .navbar-actions .tunnel-url { width: 100%; justify-content: center; }
-            .flex-between { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .flex { flex-direction: column; }
-            .flex.gap-1 { width: 100%; }
-            .flex.gap-1 input,
-            .flex.gap-1 button { width: 100%; }
-        }
+        .command-deck-card { padding-left: 28px; padding-right: 28px; }
+        .security-summary .gap-1 { display: flex; flex-wrap: wrap; gap: 8px; }
     </style>
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
             <span class="spinner"></span>
-            <p>Working...</p>
+            <p>// processing</p>
         </div>
     </div>
 
     <div class="copy-feedback" id="copyFeedback">
-        <span>✅</span>
-        <span>Copied to clipboard!</span>
+        <span>✓</span>
+        <span>copied</span>
     </div>
 
     <nav class="navbar">
         <div class="container">
             <div class="navbar-content">
                 <div class="navbar-brand">
-                    ⚡ <span>Noxveil</span>
+                    NOXVEIL <span>//</span> OPCON
                 </div>
                 <div class="navbar-stats" id="statsBar">
                     <div class="stat-badge">
-                        <span>📊</span> Agents: <span class="stat-number" id="totalAgents">0</span>
+                        agents <span class="stat-number" id="totalAgents">0</span>
                     </div>
                     <div class="stat-badge live">
-                        <span>🟢</span> Live: <span class="stat-number" id="liveAgents">0</span>
+                        live <span class="stat-number" id="liveAgents">0</span>
                     </div>
                     <div class="stat-badge dead">
-                        <span>🔴</span> Dead: <span class="stat-number" id="deadAgents">0</span>
+                        dead <span class="stat-number" id="deadAgents">0</span>
                     </div>
                     <div class="stat-badge tasks">
-                        <span>📋</span> Tasks: <span class="stat-number" id="totalTasks">0</span>
+                        tasks <span class="stat-number" id="totalTasks">0</span>
                     </div>
                 </div>
                 <div class="navbar-actions">
-                    <a href="/shell" class="btn btn-small">💻 Open server shell</a>
+                    <a href="/shell" class="btn btn-small">▸ shell</a>
                     <div class="tunnel-url" id="tunnelUrl" title="Click to copy">
-                        🌐 <span id="tunnelUrlText">Loading route...</span>
+                        → <span id="tunnelUrlText">resolving route...</span>
                     </div>
-                    <button class="btn btn-small btn-danger" id="logoutBtn">🚪 Sign out</button>
+                    <button class="btn btn-small btn-danger" id="logoutBtn">↻ sign out</button>
                 </div>
             </div>
         </div>
@@ -282,107 +81,107 @@
         <div id="notifications"></div>
 
         <section class="command-deck">
-            <article class="command-deck-card command-deck-primary command-deck-single">
-                <div class="command-deck-eyebrow">Control room</div>
-                <div class="command-deck-title">Everything important is here when you need it</div>
-                <div class="command-deck-meta" id="commandDeckSummary">Loading your dashboard...</div>
+            <article class="command-deck-card command-deck-primary">
+                <div class="command-deck-eyebrow">control room // session</div>
+                <div class="command-deck-title">Everything important is one keystroke away.</div>
+                <div class="command-deck-meta" id="commandDeckSummary">Loading workspace state...</div>
                 <div class="command-deck-pills">
-                    <div class="command-deck-pill" id="operatorIdentityPill">Signed in as -</div>
-                    <div class="command-deck-pill" id="operatorMfaPill">MFA: -</div>
-                    <div class="command-deck-pill" id="deployCountdownPill">Launch links expire in --</div>
+                    <div class="command-deck-pill" id="operatorIdentityPill">operator: -</div>
+                    <div class="command-deck-pill" id="operatorMfaPill">mfa: -</div>
+                    <div class="command-deck-pill" id="deployCountdownPill">links expire in --</div>
                 </div>
-                <div class="command-deck-inline">
-                    <div class="command-deck-inline-card">
-                        <div class="command-deck-section">Access route</div>
-                        <div class="command-deck-metric" id="tunnelHealthValue">Checking route</div>
+                <div class="dashboard-top-grid" style="margin-top: 22px;">
+                    <div style="display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r-4); background: var(--ink-1);">
+                        <div class="command-deck-section">access route</div>
+                        <div class="command-deck-metric" id="tunnelHealthValue">checking route</div>
                         <div class="command-deck-meta" id="tunnelHealthMeta">Waiting for route details...</div>
                     </div>
-                    <div class="command-deck-inline-card">
-                        <div class="command-deck-section">Selection</div>
+                    <div style="display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r-4); background: var(--ink-1);">
+                        <div class="command-deck-section">selection</div>
                         <div class="command-deck-metric" id="selectionMissionValue">0 selected</div>
-                        <div class="command-deck-meta" id="selectionMissionMeta">Pick one or more agents to run a command or open a terminal.</div>
+                        <div class="command-deck-meta" id="selectionMissionMeta">Pick agents to run a command or open a terminal.</div>
                     </div>
                 </div>
                 <div class="command-deck-actions">
-                    <button class="btn btn-small" id="copyTunnelBtn">Copy route</button>
-                    <button class="btn btn-small btn-warning" id="restartTunnelBtn">Restart route</button>
-                    <button class="btn btn-small btn-info" id="selectLiveAgentsBtn">Select online</button>
-                    <button class="btn btn-small" id="clearSelectionBtn">Clear</button>
-                    <button class="btn btn-small btn-primary" id="openSelectedTerminalBtn">Open terminal</button>
+                    <button class="btn btn-small" id="copyTunnelBtn">copy route</button>
+                    <button class="btn btn-small btn-warning" id="restartTunnelBtn">restart route</button>
+                    <button class="btn btn-small btn-info" id="selectLiveAgentsBtn">select online</button>
+                    <button class="btn btn-small" id="clearSelectionBtn">clear</button>
+                    <button class="btn btn-small btn-primary" id="openSelectedTerminalBtn">▸ open terminal</button>
                 </div>
             </article>
         </section>
 
         <section class="dashboard-top-grid">
             <div class="card deploy-panel dashboard-panel">
-                <div class="flex-between">
-                    <div class="deploy-title"><span>🚀</span> Deploy agents</div>
-                    <button class="btn btn-small" id="refreshDeployBtn">🔄 Refresh links</button>
+                <div class="card-header">
+                    <div class="deploy-title">deploy agents</div>
+                    <button class="btn btn-small" id="refreshDeployBtn">↻ refresh links</button>
                 </div>
                 <div class="deploy-grid">
                     <div class="deploy-card">
-                        <div class="deploy-card-title">Python agent</div>
-                        <div class="deploy-card-copy">Full Python payload with files, screenshots, persistence, and multi-session terminal support.</div>
+                        <div class="deploy-card-title">▸ python</div>
+                        <div class="deploy-card-copy">Full feature set: files, screenshots, persistence, multi-session terminal.</div>
                         <div class="deploy-command" id="pythonDeployCommand" title="Click to copy">
-                            <span class="spinner deploy-spinner"></span> Preparing command...
+                            <span class="spinner deploy-spinner"></span> preparing command...
                         </div>
                         <div class="deploy-card-actions">
-                            <button class="btn btn-small btn-primary" id="copyPythonDeployBtn" disabled>📋 Copy command</button>
-                            <button class="btn btn-small" id="downloadAgentBtn" disabled>💾 Download file</button>
+                            <button class="btn btn-small btn-primary" id="copyPythonDeployBtn" disabled>copy</button>
+                            <button class="btn btn-small" id="downloadAgentBtn" disabled>download</button>
                         </div>
                     </div>
                     <div class="deploy-card">
-                        <div class="deploy-card-title">Protected Python build</div>
-                        <div class="deploy-card-copy">Obfuscated Python payload for the same feature set with a quieter on-host footprint.</div>
+                        <div class="deploy-card-title">▸ python · obfuscated</div>
+                        <div class="deploy-card-copy">Same payload, quieter footprint via name mangling and string mutation.</div>
                         <div class="deploy-command" id="obfuscatedPythonDeployCommand" title="Click to copy">
-                            <span class="spinner deploy-spinner"></span> Preparing command...
+                            <span class="spinner deploy-spinner"></span> preparing command...
                         </div>
                         <div class="deploy-card-actions">
-                            <button class="btn btn-small btn-warning" id="copyObfuscatedPythonDeployBtn" disabled>📋 Copy command</button>
-                            <button class="btn btn-small" id="downloadObfuscatedAgentBtn" disabled>🕶️ Download file</button>
+                            <button class="btn btn-small btn-warning" id="copyObfuscatedPythonDeployBtn" disabled>copy</button>
+                            <button class="btn btn-small" id="downloadObfuscatedAgentBtn" disabled>download</button>
                         </div>
                     </div>
                     <div class="deploy-card">
-                        <div class="deploy-card-title">Bash agent</div>
-                        <div class="deploy-card-copy">Straightforward Bash payload for Unix-like hosts that just need a lightweight command runner.</div>
+                        <div class="deploy-card-title">▸ bash</div>
+                        <div class="deploy-card-copy">Lightweight Unix runner. Bash + curl. No Python required.</div>
                         <div class="deploy-command deploy-command-bash" id="bashDeployCommand" title="Click to copy">
-                            <span class="spinner deploy-spinner"></span> Preparing command...
+                            <span class="spinner deploy-spinner"></span> preparing command...
                         </div>
                         <div class="deploy-card-actions">
-                            <button class="btn btn-small btn-info" id="copyBashDeployBtn" disabled>📋 Copy command</button>
-                            <button class="btn btn-small" id="downloadBashAgentBtn" disabled>💾 Download file</button>
+                            <button class="btn btn-small btn-info" id="copyBashDeployBtn" disabled>copy</button>
+                            <button class="btn btn-small" id="downloadBashAgentBtn" disabled>download</button>
                         </div>
                     </div>
                     <div class="deploy-card deploy-card-stealth">
-                        <div class="deploy-card-title">Stealth Bash agent</div>
-                        <div class="deploy-card-copy">Long-poll Bash stager with cleanup, stateful shell behavior, and a lower-friction one-liner for lab targets.</div>
+                        <div class="deploy-card-title">▸ bash · stealth</div>
+                        <div class="deploy-card-copy">Long-poll bash stager with cleanup, stateful shell, lower-friction one-liner.</div>
                         <div class="deploy-command deploy-command-bash deploy-command-stealth" id="stealthBashDeployCommand" title="Click to copy">
-                            <span class="spinner deploy-spinner"></span> Preparing command...
+                            <span class="spinner deploy-spinner"></span> preparing command...
                         </div>
                         <div class="deploy-card-actions">
-                            <button class="btn btn-small btn-warning" id="copyStealthBashDeployBtn" disabled>📋 Copy command</button>
-                            <button class="btn btn-small" id="downloadStealthBashAgentBtn" disabled>🕶️ Download file</button>
+                            <button class="btn btn-small btn-warning" id="copyStealthBashDeployBtn" disabled>copy</button>
+                            <button class="btn btn-small" id="downloadStealthBashAgentBtn" disabled>download</button>
                         </div>
                     </div>
                 </div>
-                <div class="deploy-expiry-note" id="deployExpiry">Preparing signed launch links...</div>
+                <div class="deploy-expiry-note" id="deployExpiry">// preparing signed launch links</div>
             </div>
 
             <div class="card dashboard-panel dashboard-side-card">
                 <div class="card-header">
-                    <div class="card-title"><span>🔐</span> Account security</div>
+                    <div class="card-title">account security</div>
                 </div>
                 <div class="security-summary">
-                    <div class="security-pill disabled" id="mfaStatusPill">MFA off</div>
+                    <div class="security-pill disabled" id="mfaStatusPill">mfa off</div>
                     <div class="security-meta" id="securityStatusSummary">Loading account details...</div>
-                    <div class="flex gap-1">
-                        <button class="btn btn-small btn-info" id="setupMfaBtn">Create setup code</button>
-                        <button class="btn btn-small btn-primary" id="enableMfaBtn">Turn on MFA</button>
-                        <button class="btn btn-small btn-danger" id="disableMfaBtn">Turn off MFA</button>
+                    <div class="gap-1">
+                        <button class="btn btn-small btn-info" id="setupMfaBtn">setup code</button>
+                        <button class="btn btn-small btn-primary" id="enableMfaBtn">enable</button>
+                        <button class="btn btn-small btn-danger" id="disableMfaBtn">disable</button>
                     </div>
-                    <input type="text" id="mfaCodeInput" placeholder="Enter a 6-digit authenticator code">
+                    <input type="text" id="mfaCodeInput" placeholder="6-digit authenticator code">
                     <div class="mfa-secret-block" id="mfaSecretBlock">
-                        <div class="text-secondary">Authenticator setup secret</div>
+                        <div class="text-secondary" style="font-family: var(--font-mono); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.1em;">▸ authenticator setup secret</div>
                         <div class="mfa-secret-code" id="mfaSecretText">-</div>
                         <div class="security-meta" id="mfaUriText"></div>
                     </div>
@@ -393,11 +192,11 @@
         <section class="dashboard-secondary-grid">
             <div class="card dashboard-panel">
                 <div class="card-header">
-                    <div class="card-title"><span>⚡</span> Quick command</div>
+                    <div class="card-title">quick command</div>
                 </div>
                 <div class="flex gap-1">
-                    <input type="text" id="quickCommand" placeholder="Type a command, for example whoami" autocomplete="off">
-                    <button class="btn btn-primary" id="sendQuickCmd">📤 Queue</button>
+                    <input type="text" id="quickCommand" placeholder="$ whoami" autocomplete="off">
+                    <button class="btn btn-primary" id="sendQuickCmd">▸ queue</button>
                 </div>
                 <div class="command-presets" id="commandPresets">
                     <button class="command-preset" data-command="whoami">whoami</button>
@@ -414,29 +213,29 @@
                         <input type="checkbox" id="broadcastOnlineToggle">
                         <span class="toggle-track"></span>
                     </span>
-                    <span>Send this command to every online agent instead of only the current selection</span>
+                    <span>broadcast to every online agent</span>
                 </label>
                 <div class="quick-cmd-status" id="quickCmdStatus"></div>
             </div>
 
             <div class="card dashboard-panel dashboard-activity-card">
                 <div class="card-header">
-                    <div class="card-title"><span>🧾</span> Recent activity</div>
-                    <button class="btn btn-small" id="refreshAuditBtn">Refresh</button>
+                    <div class="card-title">recent activity</div>
+                    <button class="btn btn-small" id="refreshAuditBtn">↻ refresh</button>
                 </div>
                 <div class="activity-filter-row">
-                    <input type="text" id="auditSearchInput" placeholder="Filter activity...">
+                    <input type="text" id="auditSearchInput" placeholder="filter activity...">
                     <select id="auditTypeFilter">
-                        <option value="all">All types</option>
-                        <option value="auth">Auth</option>
-                        <option value="agent">Agent</option>
-                        <option value="deploy">Deploy</option>
-                        <option value="security">Security</option>
+                        <option value="all">all types</option>
+                        <option value="auth">auth</option>
+                        <option value="agent">agent</option>
+                        <option value="deploy">deploy</option>
+                        <option value="security">security</option>
                     </select>
                 </div>
                 <div class="activity-feed" id="auditLogList">
                     <div class="activity-item">
-                        <div class="activity-event">Loading recent activity...</div>
+                        <div class="activity-event">loading recent activity...</div>
                     </div>
                 </div>
             </div>
@@ -444,48 +243,48 @@
 
         <section class="card dashboard-panel dashboard-agents-card">
             <div class="card-header">
-                <div class="card-title"><span>🤖</span> Managed agents</div>
+                <div class="card-title">managed agents</div>
                 <div class="managed-agents-toolbar">
-                    <div class="managed-agents-summary" id="agentSelectionSummary">0 agents tracked</div>
-                    <button class="btn btn-small" id="refreshAgentsBtn">🔄 Refresh</button>
+                    <div class="managed-agents-summary" id="agentSelectionSummary">0 tracked</div>
+                    <button class="btn btn-small" id="refreshAgentsBtn">↻ refresh</button>
                 </div>
             </div>
             <div class="managed-agents-tools">
                 <div class="managed-agents-filters">
-                    <input type="text" id="agentSearchInput" placeholder="Search by host, user, IP, platform, note, or ID">
+                    <input type="text" id="agentSearchInput" placeholder="search host, user, ip, platform, note, id">
                     <select id="agentStatusFilter">
-                        <option value="all">All states</option>
-                        <option value="online">Online only</option>
-                        <option value="offline">Offline only</option>
-                        <option value="selected">Selected only</option>
+                        <option value="all">all states</option>
+                        <option value="online">online only</option>
+                        <option value="offline">offline only</option>
+                        <option value="selected">selected only</option>
                     </select>
                     <select id="agentSortSelect">
-                        <option value="health">Health and last seen</option>
-                        <option value="hostname">Hostname A-Z</option>
-                        <option value="last_seen">Most recent first</option>
-                        <option value="callback">Fastest callback</option>
+                        <option value="health">health · last seen</option>
+                        <option value="hostname">hostname a→z</option>
+                        <option value="last_seen">most recent</option>
+                        <option value="callback">fastest callback</option>
                     </select>
                 </div>
                 <div class="managed-agents-bulk-actions">
-                    <button class="btn btn-small" id="copySelectedIdsBtn">Copy IDs</button>
-                    <button class="btn btn-small" id="copySelectedHostsBtn">Copy hosts</button>
-                    <button class="btn btn-small btn-info" id="queueInfoBtn">Queue !info</button>
+                    <button class="btn btn-small" id="copySelectedIdsBtn">copy ids</button>
+                    <button class="btn btn-small" id="copySelectedHostsBtn">copy hosts</button>
+                    <button class="btn btn-small btn-info" id="queueInfoBtn">queue !info</button>
                 </div>
             </div>
             <div class="managed-agents-mission" id="managedAgentsMission">
-                Pick one agent for a live terminal, or select several to queue the same command
+                pick one agent for live terminal · select multiple to fan-out the same command
             </div>
             <div class="managed-agents-controls">
                 <label class="managed-agents-select-all" for="selectAll">
                     <input type="checkbox" id="selectAll" title="Select all agents">
-                    <span>Select all visible</span>
+                    <span>select all visible</span>
                 </label>
-                <div class="managed-agents-hint">This list refreshes automatically every 5 seconds</div>
+                <div class="managed-agents-hint">// auto-refresh every 5s</div>
             </div>
             <div class="managed-agents-grid" id="agentCards">
                 <div class="agent-card agent-card-loading">
                     <div class="spinner"></div>
-                    <div class="managed-agents-loading-text">Loading agents...</div>
+                    <div class="managed-agents-loading-text">loading agents...</div>
                 </div>
             </div>
         </section>
@@ -494,22 +293,22 @@
     <div class="modal" id="agentModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>✏️ Edit agent</h3>
+                <h3>edit agent</h3>
             </div>
             <div class="modal-body">
                 <div class="mb-1">
-                    <label for="agentNote">📝 Note</label>
-                    <textarea id="agentNote" rows="4" placeholder="Add a note for this agent..."></textarea>
+                    <label for="agentNote">note</label>
+                    <textarea id="agentNote" rows="4" placeholder="// add a note for this agent"></textarea>
                 </div>
                 <div class="mb-1">
-                    <label for="agentInterval">⏱️ Callback interval (seconds)</label>
+                    <label for="agentInterval">callback interval (seconds)</label>
                     <input type="number" id="agentInterval" min="1" max="300" value="5">
-                    <small class="form-hint">How often the agent checks in for new tasks</small>
+                    <small class="form-hint">how often the agent checks in for new tasks</small>
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="btn" id="cancelModal">❌ Cancel</button>
-                <button class="btn btn-primary" id="saveModal">💾 Save changes</button>
+                <button class="btn" id="cancelModal">cancel</button>
+                <button class="btn btn-primary" id="saveModal">▸ save</button>
             </div>
         </div>
     </div>

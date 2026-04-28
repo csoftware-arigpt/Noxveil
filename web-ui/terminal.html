@@ -3,54 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noxveil - Agent Workspace</title>
+    <title>Noxveil // agent shell</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .terminal-page {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            background:
-                radial-gradient(circle at top left, rgba(0, 212, 255, 0.14), transparent 30%),
-                radial-gradient(circle at bottom right, rgba(255, 0, 85, 0.12), transparent 30%),
-                var(--bg-primary);
+            background: var(--ink-0);
         }
 
         .terminal-shell-header {
             position: sticky;
             top: 0;
             z-index: 20;
-            backdrop-filter: blur(18px);
-            background: rgba(8, 12, 22, 0.88);
-            border-bottom: 1px solid rgba(160, 254, 199, 0.12);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.24);
+            background: var(--ink-1);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .terminal-shell-header::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; bottom: -1px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--signal-edge) 30%, var(--signal-edge) 70%, transparent);
+            opacity: 0.5;
         }
 
         .terminal-shell-header .container {
-            padding-top: 18px;
-            padding-bottom: 18px;
+            padding-top: 14px;
+            padding-bottom: 14px;
         }
 
         .terminal-hero {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 18px;
+            gap: 16px;
             flex-wrap: wrap;
         }
 
-        .terminal-hero-copy {
-            max-width: 760px;
-        }
+        .terminal-hero-copy { max-width: 680px; }
 
         .terminal-eyebrow {
             font-family: var(--font-mono);
-            color: var(--info);
-            font-size: 0.8rem;
-            letter-spacing: 0.14em;
+            color: var(--signal);
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
             text-transform: uppercase;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
+
+        .terminal-eyebrow::before { content: "// "; color: var(--text-dim); }
 
         .terminal-title-row {
             display: flex;
@@ -61,53 +65,66 @@
 
         .terminal-title-row h1 {
             margin: 0;
-            font-size: clamp(1.6rem, 3vw, 2.45rem);
-            color: #f4fff9;
+            font-family: var(--font-mono);
+            font-size: clamp(1.4rem, 3vw, 2rem);
+            color: var(--text-light);
+            font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
         .terminal-subtitle {
-            margin-top: 10px;
+            margin-top: 8px;
             color: var(--text-muted);
-            max-width: 680px;
+            font-family: var(--font-mono);
+            font-size: 0.84rem;
+            max-width: 60ch;
         }
 
         .terminal-status-pill {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            border-radius: 999px;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            background: rgba(0, 255, 136, 0.08);
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: var(--r-3);
+            border: 1px solid var(--warn-edge);
+            background: var(--warn-soft);
             font-family: var(--font-mono);
-            font-size: 0.82rem;
-            color: var(--text-light);
+            font-size: 0.74rem;
+            color: var(--warn);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
         }
 
         .terminal-status-pill .dot {
-            width: 9px;
-            height: 9px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: currentColor;
-            box-shadow: 0 0 12px currentColor;
+            box-shadow: 0 0 8px currentColor;
         }
 
         .terminal-status-pill.waiting {
-            color: var(--warning);
-            border-color: rgba(255, 165, 2, 0.25);
-            background: rgba(255, 165, 2, 0.08);
+            color: var(--warn);
+            border-color: var(--warn-edge);
+            background: var(--warn-soft);
         }
 
         .terminal-status-pill.disconnected {
-            color: var(--danger);
-            border-color: rgba(255, 71, 87, 0.24);
-            background: rgba(255, 71, 87, 0.08);
+            color: var(--alarm);
+            border-color: var(--alarm-edge);
+            background: var(--alarm-soft);
+        }
+
+        .terminal-status-pill:not(.waiting):not(.disconnected) {
+            color: var(--signal);
+            border-color: var(--signal-edge);
+            background: var(--signal-soft);
         }
 
         .terminal-toolbar {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
             flex-wrap: wrap;
             justify-content: flex-end;
         }
@@ -115,64 +132,78 @@
         .terminal-workspace {
             display: grid;
             grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
-            gap: 18px;
-            padding-top: 24px;
-            padding-bottom: 24px;
+            gap: 14px;
+            padding-top: 18px;
+            padding-bottom: 18px;
         }
 
         .terminal-main,
         .terminal-sidebar-card {
-            border-radius: 24px;
-            border: 1px solid rgba(74, 85, 104, 0.55);
-            background:
-                linear-gradient(160deg, rgba(17, 24, 39, 0.96), rgba(11, 18, 32, 0.96));
-            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
+            border: 1px solid var(--line);
+            border-radius: var(--r-6);
+            background: var(--ink-1);
         }
 
         .terminal-main {
-            padding: 18px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            min-height: 760px;
+            min-height: 720px;
         }
 
         .terminal-main-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 14px;
-            margin-bottom: 14px;
+            gap: 12px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
         }
 
         .terminal-main-title {
-            color: #f3fff8;
-            font-size: 1rem;
+            color: var(--text-light);
             font-family: var(--font-mono);
+            font-size: 0.86rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .terminal-main-title::before {
+            content: "▸ ";
+            color: var(--signal);
         }
 
         .terminal-main-meta {
             color: var(--text-dim);
-            font-size: 0.8rem;
+            font-size: 0.74rem;
             font-family: var(--font-mono);
         }
 
         .terminal-meta-divider {
             opacity: 0.45;
             margin: 0 8px;
+            color: var(--text-dim);
         }
 
         .terminal-screen {
             flex: 1;
-            background:
-                radial-gradient(circle at top right, rgba(0, 255, 136, 0.08), transparent 26%),
-                #05070d;
-            border: 1px solid rgba(74, 85, 104, 0.45);
-            border-radius: 18px;
-            padding: 16px;
+            background: var(--ink-0);
+            border: 1px solid var(--line);
+            border-radius: var(--r-4);
+            padding: 14px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            position: relative;
+        }
+
+        .terminal-screen::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, var(--signal), transparent 60%);
+            opacity: 0.4;
         }
 
         .terminal-output {
@@ -182,76 +213,79 @@
         }
 
         .terminal-input-area {
-            margin-top: 14px;
+            margin-top: 12px;
             display: grid;
             grid-template-columns: auto auto minmax(0, 1fr) auto;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
-            padding: 12px 14px;
-            border: 1px solid rgba(74, 85, 104, 0.5);
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: var(--r-3);
+            background: var(--ink-1);
         }
 
         .terminal-sidebar {
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 14px;
         }
 
         .terminal-sidebar-card {
-            padding: 18px;
+            padding: 16px;
         }
 
         .sidebar-card-title {
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             font-family: var(--font-mono);
-            font-size: 0.92rem;
+            font-size: 0.76rem;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-secondary);
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+        }
+
+        .sidebar-card-title::before {
+            content: "▸ ";
+            color: var(--signal);
         }
 
         .agent-identity-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
+            gap: 8px;
         }
 
         .agent-identity-item,
         .action-group,
         .artifact-panel {
             min-width: 0;
-            padding: 12px 13px;
-            border-radius: 16px;
-            border: 1px solid rgba(74, 85, 104, 0.45);
-            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 12px;
+            border-radius: var(--r-3);
+            border: 1px solid var(--line);
+            background: var(--ink-2);
         }
 
         .identity-label {
             color: var(--text-dim);
             font-family: var(--font-mono);
-            font-size: 0.72rem;
+            font-size: 0.66rem;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.12em;
         }
 
         .identity-value {
-            margin-top: 6px;
-            color: #f2fff8;
+            margin-top: 4px;
+            color: var(--text-light);
+            font-family: var(--font-mono);
             word-break: break-word;
-            font-size: 0.92rem;
+            font-size: 0.84rem;
         }
 
-        .action-stack {
-            display: grid;
-            gap: 12px;
-        }
+        .action-stack { display: grid; gap: 10px; }
 
         .action-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
         }
 
         .action-row .btn {
@@ -262,24 +296,30 @@
 
         .action-group label {
             display: block;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
+            margin-bottom: 6px;
+            color: var(--text-muted);
             font-family: var(--font-mono);
-            font-size: 0.78rem;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .action-group label::before {
+            content: "▸ ";
+            color: var(--signal);
         }
 
         .action-group input[type="text"],
         .action-group input[type="number"] {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
-        .artifact-panel {
-            min-height: 180px;
-        }
+        .artifact-panel { min-height: 160px; }
 
         .artifact-empty {
             color: var(--text-dim);
-            font-size: 0.88rem;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
             line-height: 1.6;
         }
 
@@ -287,45 +327,46 @@
             width: 100%;
             max-height: 320px;
             object-fit: contain;
-            border-radius: 14px;
-            border: 1px solid rgba(74, 85, 104, 0.5);
-            background: rgba(0, 0, 0, 0.22);
+            border-radius: var(--r-3);
+            border: 1px solid var(--line);
+            background: var(--ink-0);
         }
 
         .artifact-meta {
-            margin-top: 12px;
+            margin-top: 10px;
             color: var(--text-muted);
-            font-size: 0.84rem;
-            line-height: 1.6;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            line-height: 1.55;
             word-break: break-word;
         }
 
         .artifact-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 14px;
+            gap: 8px;
+            margin-top: 12px;
             flex-wrap: wrap;
         }
 
         .history-list,
         .preset-grid {
             display: grid;
-            gap: 10px;
+            gap: 8px;
         }
 
         .history-list-helper {
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             color: var(--text-dim);
-            font-size: 0.78rem;
-            line-height: 1.6;
+            font-size: 0.74rem;
+            line-height: 1.55;
             font-family: var(--font-mono);
         }
 
         .history-item {
-            padding: 12px;
-            border-radius: 14px;
-            border: 1px solid rgba(74, 85, 104, 0.42);
-            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            border-radius: var(--r-3);
+            border: 1px solid var(--line);
+            background: var(--ink-2);
         }
 
         button.history-item {
@@ -333,172 +374,157 @@
             cursor: pointer;
             text-align: left;
             color: inherit;
-            transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+            transition: border-color var(--transition-fast), background var(--transition-fast);
         }
 
         button.history-item:hover {
-            border-color: rgba(115, 199, 255, 0.32);
-            background: rgba(115, 199, 255, 0.06);
-            transform: translateY(-1px);
+            border-color: var(--signal-edge);
+            background: var(--ink-3);
         }
 
         .history-command {
-            color: #f3fff8;
+            color: var(--text-light);
             font-family: var(--font-mono);
-            font-size: 0.8rem;
-            line-height: 1.55;
+            font-size: 0.78rem;
+            line-height: 1.5;
             word-break: break-word;
         }
 
-        .history-meta {
-            margin-top: 8px;
-            color: var(--text-dim);
-            font-size: 0.76rem;
-            line-height: 1.6;
+        .history-command::before {
+            content: "$ ";
+            color: var(--signal);
         }
 
-        .preset-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+        .history-meta {
+            margin-top: 6px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            line-height: 1.5;
         }
+
+        .preset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
         .terminal-preset {
             width: 100%;
             justify-content: center;
-            min-height: 44px;
+            min-height: 36px;
         }
 
-        .terminal-help-grid {
-            display: grid;
-            gap: 10px;
-        }
+        .terminal-help-grid { display: grid; gap: 6px; }
 
         .terminal-help-item {
-            padding: 11px 12px;
-            border-radius: 14px;
-            border: 1px solid rgba(74, 85, 104, 0.4);
-            background: rgba(255, 255, 255, 0.03);
+            padding: 9px 10px;
+            border-radius: var(--r-3);
+            border: 1px solid var(--line);
+            background: var(--ink-2);
             color: var(--text-muted);
-            font-size: 0.84rem;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
             line-height: 1.5;
         }
 
         .terminal-help-item code {
             display: inline-block;
             margin-right: 6px;
-            color: var(--text-light);
-            background: rgba(255, 255, 255, 0.04);
-            padding: 3px 7px;
-            border-radius: 8px;
+            color: var(--signal);
+            background: var(--ink-1);
+            padding: 2px 6px;
+            border-radius: 2px;
+            border: 1px solid var(--line);
+            font-size: 0.74rem;
         }
 
         .session-summary {
             color: var(--text-muted);
             font-family: var(--font-mono);
-            font-size: 0.78rem;
-            line-height: 1.6;
+            font-size: 0.74rem;
+            line-height: 1.5;
         }
 
-        .session-stack {
-            display: grid;
-            gap: 10px;
-        }
+        .session-stack { display: grid; gap: 8px; }
 
         .session-row {
             display: grid;
             grid-template-columns: minmax(0, 1fr) auto;
-            gap: 10px;
+            gap: 8px;
             align-items: stretch;
         }
 
         .session-select {
             width: 100%;
-            padding: 12px 14px;
-            border-radius: 16px;
-            border: 1px solid rgba(74, 85, 104, 0.42);
-            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 12px;
+            border-radius: var(--r-3);
+            border: 1px solid var(--line);
+            background: var(--ink-2);
             color: inherit;
             cursor: pointer;
             text-align: left;
-            transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+            transition: border-color var(--transition-fast), background var(--transition-fast);
         }
 
         .session-select:hover {
-            transform: translateY(-1px);
-            border-color: rgba(115, 199, 255, 0.3);
-            background: rgba(115, 199, 255, 0.05);
+            border-color: var(--signal-edge);
+            background: var(--ink-3);
         }
 
         .session-select.active {
-            border-color: rgba(102, 240, 166, 0.36);
-            background: rgba(102, 240, 166, 0.08);
-            box-shadow: 0 0 0 1px rgba(102, 240, 166, 0.16);
+            border-color: var(--signal);
+            background: var(--signal-soft);
         }
 
         .session-select.closed {
-            border-color: rgba(255, 107, 129, 0.24);
-            background: rgba(255, 107, 129, 0.06);
+            border-color: var(--alarm-edge);
+            background: var(--alarm-soft);
         }
 
         .session-select.switching {
-            border-color: rgba(255, 180, 84, 0.28);
-            background: rgba(255, 180, 84, 0.06);
+            border-color: var(--warn-edge);
+            background: var(--warn-soft);
         }
 
         .session-title-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 6px;
+            gap: 8px;
+            margin-bottom: 4px;
         }
 
         .session-title {
-            color: #f4fff9;
+            color: var(--text-light);
             font-family: var(--font-mono);
-            font-size: 0.84rem;
+            font-size: 0.82rem;
         }
 
         .session-pill {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 5px 8px;
-            border-radius: 999px;
-            border: 1px solid rgba(74, 85, 104, 0.42);
+            gap: 5px;
+            padding: 3px 7px;
+            border-radius: var(--r-3);
+            border: 1px solid var(--line);
             font-family: var(--font-mono);
-            font-size: 0.68rem;
+            font-size: 0.66rem;
             text-transform: uppercase;
+            letter-spacing: 0.08em;
             white-space: nowrap;
         }
 
-        .session-pill.open {
-            color: var(--success);
-            border-color: rgba(102, 240, 166, 0.28);
-            background: rgba(102, 240, 166, 0.08);
-        }
-
-        .session-pill.closed {
-            color: var(--danger);
-            border-color: rgba(255, 107, 129, 0.25);
-            background: rgba(255, 107, 129, 0.08);
-        }
-
-        .session-pill.unread {
-            color: var(--warning);
-            border-color: rgba(255, 180, 84, 0.25);
-            background: rgba(255, 180, 84, 0.08);
-        }
+        .session-pill.open { color: var(--signal); border-color: var(--signal-edge); background: var(--signal-soft); }
+        .session-pill.closed { color: var(--alarm); border-color: var(--alarm-edge); background: var(--alarm-soft); }
+        .session-pill.unread { color: var(--warn); border-color: var(--warn-edge); background: var(--warn-soft); }
 
         .session-meta {
             color: var(--text-dim);
             font-family: var(--font-mono);
-            font-size: 0.74rem;
-            line-height: 1.6;
+            font-size: 0.72rem;
+            line-height: 1.5;
         }
 
         .session-close {
-            min-width: 46px;
-            border-radius: 16px;
+            min-width: 38px;
+            border-radius: var(--r-3);
         }
 
         .terminal-history-modal .modal-content {
@@ -510,7 +536,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
         }
 
@@ -520,101 +546,87 @@
             font-size: 0.82rem;
         }
 
-        .terminal-history-list {
-            display: grid;
-            gap: 12px;
-        }
+        .terminal-history-list { display: grid; gap: 10px; }
 
         .terminal-history-entry {
-            border: 1px solid rgba(74, 85, 104, 0.45);
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--line);
+            border-radius: var(--r-4);
+            background: var(--ink-2);
             overflow: hidden;
         }
 
         .terminal-history-entry summary {
             list-style: none;
             cursor: pointer;
-            padding: 14px 16px;
+            padding: 12px 14px;
         }
 
-        .terminal-history-entry summary::-webkit-details-marker {
-            display: none;
-        }
+        .terminal-history-entry summary::-webkit-details-marker { display: none; }
 
         .terminal-history-entry[open] summary {
-            border-bottom: 1px solid rgba(74, 85, 104, 0.35);
-            background: rgba(115, 199, 255, 0.05);
+            border-bottom: 1px solid var(--line);
+            background: var(--ink-3);
         }
 
         .terminal-history-entry-top {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 14px;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
         .terminal-history-command {
-            color: #f3fff8;
+            color: var(--text-light);
             font-family: var(--font-mono);
-            font-size: 0.88rem;
-            line-height: 1.6;
+            font-size: 0.84rem;
+            line-height: 1.55;
             word-break: break-word;
+        }
+
+        .terminal-history-command::before {
+            content: "$ ";
+            color: var(--signal);
         }
 
         .terminal-history-badge {
             display: inline-flex;
             align-items: center;
-            gap: 7px;
-            padding: 7px 10px;
-            border-radius: 999px;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: var(--r-3);
             font-family: var(--font-mono);
-            font-size: 0.74rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
-            border: 1px solid rgba(74, 85, 104, 0.45);
+            letter-spacing: 0.08em;
+            border: 1px solid var(--line);
             color: var(--text-secondary);
+            background: var(--ink-1);
             white-space: nowrap;
         }
 
-        .terminal-history-badge.completed {
-            color: var(--success);
-            border-color: rgba(102, 240, 166, 0.3);
-            background: rgba(102, 240, 166, 0.09);
-        }
-
-        .terminal-history-badge.error {
-            color: var(--danger);
-            border-color: rgba(255, 107, 129, 0.28);
-            background: rgba(255, 107, 129, 0.09);
-        }
-
+        .terminal-history-badge.completed { color: var(--signal); border-color: var(--signal-edge); background: var(--signal-soft); }
+        .terminal-history-badge.error { color: var(--alarm); border-color: var(--alarm-edge); background: var(--alarm-soft); }
         .terminal-history-badge.pending,
-        .terminal-history-badge.sent {
-            color: var(--warning);
-            border-color: rgba(255, 180, 84, 0.28);
-            background: rgba(255, 180, 84, 0.08);
-        }
+        .terminal-history-badge.sent { color: var(--warn); border-color: var(--warn-edge); background: var(--warn-soft); }
 
         .terminal-history-meta {
-            margin-top: 8px;
+            margin-top: 6px;
             color: var(--text-dim);
             font-family: var(--font-mono);
-            font-size: 0.76rem;
-            line-height: 1.6;
+            font-size: 0.72rem;
+            line-height: 1.5;
         }
 
-        .terminal-history-output {
-            padding: 16px;
-        }
+        .terminal-history-output { padding: 14px; }
 
         .terminal-history-output-label {
-            margin-bottom: 8px;
-            color: var(--text-secondary);
+            margin-bottom: 6px;
+            color: var(--text-muted);
             font-family: var(--font-mono);
-            font-size: 0.74rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.1em;
         }
 
         .terminal-history-output pre {
@@ -623,53 +635,31 @@
             word-break: break-word;
             color: var(--text-light);
             font-family: var(--font-mono);
-            font-size: 0.82rem;
-            line-height: 1.7;
+            font-size: 0.8rem;
+            line-height: 1.65;
         }
 
         .terminal-history-empty {
-            padding: 18px;
-            border-radius: 18px;
-            border: 1px solid rgba(74, 85, 104, 0.42);
-            background: rgba(255, 255, 255, 0.03);
+            padding: 16px;
+            border-radius: var(--r-3);
+            border: 1px solid var(--line);
+            background: var(--ink-2);
             color: var(--text-muted);
-            line-height: 1.7;
+            font-family: var(--font-mono);
+            line-height: 1.65;
         }
 
         @media (max-width: 1180px) {
-            .terminal-workspace {
-                grid-template-columns: 1fr;
-            }
-
-            .terminal-main {
-                min-height: 640px;
-            }
+            .terminal-workspace { grid-template-columns: 1fr; }
+            .terminal-main { min-height: 560px; }
         }
 
         @media (max-width: 720px) {
-            .terminal-shell-header .container,
-            .terminal-workspace.container {
-                padding-left: 12px;
-                padding-right: 12px;
-            }
-
-            .terminal-toolbar {
-                width: 100%;
-                justify-content: stretch;
-            }
-
+            .terminal-toolbar { width: 100%; justify-content: stretch; }
             .terminal-toolbar .btn,
-            .action-row .btn {
-                width: 100%;
-            }
-
-            .terminal-input-area {
-                grid-template-columns: 1fr;
-            }
-
-            .agent-identity-grid {
-                grid-template-columns: 1fr;
-            }
+            .action-row .btn { width: 100%; }
+            .terminal-input-area { grid-template-columns: 1fr; }
+            .agent-identity-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -679,29 +669,29 @@
             <div class="container">
                 <div class="terminal-hero">
                     <div class="terminal-hero-copy">
-                        <div class="terminal-eyebrow">Agent Workspace</div>
+                        <div class="terminal-eyebrow">agent workspace · live</div>
                         <div class="terminal-title-row">
-                            <h1>Live agent workspace</h1>
+                            <h1>agent shell</h1>
                             <div class="terminal-status-pill waiting" id="heroStatusPill">
                                 <span class="dot"></span>
-                                <span id="connectionStatus">Connecting...</span>
+                                <span id="connectionStatus">connecting...</span>
                             </div>
                         </div>
                         <p class="terminal-subtitle">
-                            Run commands, move files, collect screenshots, and keep everything for this agent in one place
+                            commands · files · screenshots · sessions — all in one view
                         </p>
                     </div>
                     <div class="terminal-toolbar">
-                        <a href="/dashboard" class="btn btn-small">Back</a>
-                        <button class="btn btn-small btn-primary" id="newSessionBtn">New shell</button>
-                        <button class="btn btn-small" id="openFullHistoryBtn">Full history</button>
-                        <button class="btn btn-small" id="refreshInfoBtn">Refresh details</button>
-                        <button class="btn btn-small btn-info" id="screenshotBtn">Take screenshot</button>
-                        <button class="btn btn-small btn-warning" id="persistBtn">Try persistence</button>
-                        <button class="btn btn-small" id="copyTranscriptBtn">Copy transcript</button>
-                        <button class="btn btn-small" id="saveTranscriptBtn">Save transcript</button>
-                        <button class="btn btn-small" id="clearTranscriptBtn">Clear View</button>
-                        <button class="btn btn-small btn-danger" id="killAgentBtn">Kill agent</button>
+                        <a href="/dashboard" class="btn btn-small">← back</a>
+                        <button class="btn btn-small btn-primary" id="newSessionBtn">+ shell</button>
+                        <button class="btn btn-small" id="openFullHistoryBtn">history</button>
+                        <button class="btn btn-small" id="refreshInfoBtn">refresh</button>
+                        <button class="btn btn-small btn-info" id="screenshotBtn">screenshot</button>
+                        <button class="btn btn-small btn-warning" id="persistBtn">persist</button>
+                        <button class="btn btn-small" id="copyTranscriptBtn">copy log</button>
+                        <button class="btn btn-small" id="saveTranscriptBtn">save log</button>
+                        <button class="btn btn-small" id="clearTranscriptBtn">clear</button>
+                        <button class="btn btn-small btn-danger" id="killAgentBtn">kill</button>
                     </div>
                 </div>
             </div>
@@ -711,112 +701,112 @@
             <section class="terminal-main">
                 <div class="terminal-main-top">
                     <div>
-                        <div class="terminal-main-title">Terminal</div>
+                        <div class="terminal-main-title">terminal</div>
                         <div class="terminal-main-meta">
-                            <span id="terminalModeLabel">Mode: checking...</span>
-                            <span class="terminal-meta-divider">•</span>
-                            <span id="sessionIdLabel">Session: pending</span>
+                            <span id="terminalModeLabel">mode: checking...</span>
+                            <span class="terminal-meta-divider">·</span>
+                            <span id="sessionIdLabel">session: pending</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="terminal-screen terminal">
                     <div class="terminal-output" id="terminalOutput">
-                        <div class="text-dim">[Connecting to agent...]</div>
+                        <div class="text-dim">// connecting to agent...</div>
                     </div>
                     <div class="terminal-input-area">
-                        <span class="connection-status connected" id="statusIndicator">🟢</span>
+                        <span class="connection-status connected" id="statusIndicator">●</span>
                         <span class="terminal-prompt">$</span>
                         <input
                             type="text"
                             class="terminal-input"
                             id="commandInput"
-                            placeholder="Enter a command..."
+                            placeholder="enter a command..."
                             autocomplete="off"
                         >
-                        <button class="btn btn-small btn-primary" id="sendBtn">Send</button>
+                        <button class="btn btn-small btn-primary" id="sendBtn">send</button>
                     </div>
                 </div>
             </section>
 
             <aside class="terminal-sidebar">
                 <div class="terminal-sidebar-card">
-                    <div class="sidebar-card-title">Agent details</div>
+                    <div class="sidebar-card-title">agent details</div>
                     <div class="agent-identity-grid">
                         <div class="agent-identity-item">
-                            <div class="identity-label">Hostname</div>
+                            <div class="identity-label">hostname</div>
                             <div class="identity-value" id="agentHostname">-</div>
                         </div>
                         <div class="agent-identity-item">
-                            <div class="identity-label">User</div>
+                            <div class="identity-label">user</div>
                             <div class="identity-value" id="agentUser">-</div>
                         </div>
                         <div class="agent-identity-item">
-                            <div class="identity-label">Platform</div>
+                            <div class="identity-label">platform</div>
                             <div class="identity-value" id="agentOS">-</div>
                         </div>
                         <div class="agent-identity-item">
-                            <div class="identity-label">Internal IP</div>
+                            <div class="identity-label">internal ip</div>
                             <div class="identity-value" id="agentIP">-</div>
                         </div>
                         <div class="agent-identity-item">
-                            <div class="identity-label">Uptime</div>
+                            <div class="identity-label">uptime</div>
                             <div class="identity-value" id="agentUptime">-</div>
                         </div>
                         <div class="agent-identity-item">
-                            <div class="identity-label">Callback</div>
+                            <div class="identity-label">callback</div>
                             <div class="identity-value" id="agentCallback">-</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="terminal-sidebar-card">
-                    <div class="card-header" style="margin-bottom: 14px; padding-bottom: 0; border-bottom: none;">
-                        <div class="sidebar-card-title" style="margin-bottom: 0;">Shell sessions</div>
-                        <div class="session-summary" id="sessionSummary">Waiting for shell sessions...</div>
+                    <div class="card-header" style="margin-bottom: 12px; padding-bottom: 0; border-bottom: none;">
+                        <div class="sidebar-card-title" style="margin-bottom: 0;">shell sessions</div>
+                        <div class="session-summary" id="sessionSummary">waiting for sessions...</div>
                     </div>
-                    <div class="history-list-helper">Create multiple shells, switch between them, and keep a separate transcript for each one</div>
+                    <div class="history-list-helper">// multiple shells · per-session transcript</div>
                     <div class="session-stack" id="sessionList">
                         <div class="history-item">
-                            <div class="history-command">No shell sessions yet</div>
-                            <div class="history-meta">Once the interactive transport is ready, new sessions will appear here</div>
+                            <div class="history-command">no shell sessions yet</div>
+                            <div class="history-meta">sessions appear here once interactive transport is ready</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="terminal-sidebar-card">
-                    <div class="sidebar-card-title">File operations</div>
+                    <div class="sidebar-card-title">file operations</div>
                     <div class="action-stack">
                         <div class="action-group">
-                            <label for="downloadPath">Download a remote file</label>
+                            <label for="downloadPath">download remote file</label>
                             <input type="text" id="downloadPath" placeholder="/etc/hosts">
-                            <button class="btn btn-small btn-info" id="downloadFileBtn">Queue download</button>
+                            <button class="btn btn-small btn-info" id="downloadFileBtn">queue download</button>
                         </div>
                         <div class="action-group">
-                            <label for="uploadPath">Upload a local file</label>
-                            <input type="text" id="uploadPath" placeholder="/tmp/operator-payload.bin">
+                            <label for="uploadPath">upload local file</label>
+                            <input type="text" id="uploadPath" placeholder="/tmp/payload.bin">
                             <input type="file" id="uploadFileInput">
-                            <button class="btn btn-small btn-primary" id="uploadFileBtn">Upload to agent</button>
+                            <button class="btn btn-small btn-primary" id="uploadFileBtn">upload</button>
                         </div>
                         <div class="action-group">
-                            <label for="sleepInterval">Adjust callback interval</label>
+                            <label for="sleepInterval">callback interval</label>
                             <input type="number" id="sleepInterval" min="1" max="3600" placeholder="5">
-                            <button class="btn btn-small" id="sleepBtn">Update sleep</button>
+                            <button class="btn btn-small" id="sleepBtn">update sleep</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="terminal-sidebar-card">
-                    <div class="sidebar-card-title">Artifacts</div>
+                    <div class="sidebar-card-title">artifacts</div>
                     <div class="artifact-panel" id="artifactPanel">
                         <div class="artifact-empty">
-                            Screenshots, downloaded files, and upload confirmations will appear here as soon as the agent responds
+                            // screenshots · downloads · upload confirmations land here
                         </div>
                     </div>
                 </div>
 
                 <div class="terminal-sidebar-card">
-                    <div class="sidebar-card-title">Quick actions</div>
+                    <div class="sidebar-card-title">quick actions</div>
                     <div class="preset-grid" id="terminalPresetGrid">
                         <button class="btn btn-small terminal-preset" data-terminal-command="whoami">whoami</button>
                         <button class="btn btn-small terminal-preset" data-terminal-command="hostname">hostname</button>
@@ -828,41 +818,41 @@
                 </div>
 
                 <div class="terminal-sidebar-card">
-                    <div class="card-header" style="margin-bottom: 14px; padding-bottom: 0; border-bottom: none;">
-                        <div class="sidebar-card-title" style="margin-bottom: 0;">Command history</div>
-                        <button class="btn btn-small" id="clearCommandHistoryBtn">Clear</button>
+                    <div class="card-header" style="margin-bottom: 12px; padding-bottom: 0; border-bottom: none;">
+                        <div class="sidebar-card-title" style="margin-bottom: 0;">command history</div>
+                        <button class="btn btn-small" id="clearCommandHistoryBtn">clear</button>
                     </div>
-                    <div class="history-list-helper">Use ↑/↓ in the input or click any command below to load it back into the prompt</div>
+                    <div class="history-list-helper">// ↑/↓ in input or click to load</div>
                     <div class="history-list" id="commandHistoryList">
                         <div class="history-item">
-                            <div class="history-command">No commands yet</div>
-                            <div class="history-meta">Commands sent from this workspace will be saved locally for this agent</div>
+                            <div class="history-command">no commands yet</div>
+                            <div class="history-meta">commands sent from this workspace are saved locally</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="terminal-sidebar-card">
-                    <div class="card-header" style="margin-bottom: 14px; padding-bottom: 0; border-bottom: none;">
-                        <div class="sidebar-card-title" style="margin-bottom: 0;">Recent task history</div>
-                        <button class="btn btn-small" id="refreshHistoryBtn">Refresh</button>
+                    <div class="card-header" style="margin-bottom: 12px; padding-bottom: 0; border-bottom: none;">
+                        <div class="sidebar-card-title" style="margin-bottom: 0;">recent task history</div>
+                        <button class="btn btn-small" id="refreshHistoryBtn">↻</button>
                     </div>
                     <div class="history-list" id="recentHistoryList">
                         <div class="history-item">
-                            <div class="history-command">Loading recent task history...</div>
+                            <div class="history-command">loading recent task history...</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="terminal-sidebar-card">
-                    <div class="sidebar-card-title">Command guide</div>
+                    <div class="sidebar-card-title">command guide</div>
                     <div class="terminal-help-grid">
-                        <div class="terminal-help-item"><code>!info</code>Refresh target details and sync the sidebar</div>
-                        <div class="terminal-help-item"><code>!download /path</code>Pull a file and save it from the artifact panel</div>
-                        <div class="terminal-help-item"><code>!upload</code>Use the upload form to push a local file to a remote path</div>
-                        <div class="terminal-help-item"><code>!screenshot</code>Capture the screen and preview it inline</div>
-                        <div class="terminal-help-item"><code>!persist</code>Try the agent's OS-specific persistence method</div>
-                        <div class="terminal-help-item"><code>!sleep 30</code>Change the beacon interval without leaving the session</div>
-                        <div class="terminal-help-item"><code>!kill</code>Terminate the agent after confirming the action</div>
+                        <div class="terminal-help-item"><code>!info</code>refresh target details</div>
+                        <div class="terminal-help-item"><code>!download /path</code>pull a file</div>
+                        <div class="terminal-help-item"><code>!upload</code>push a local file</div>
+                        <div class="terminal-help-item"><code>!screenshot</code>capture screen</div>
+                        <div class="terminal-help-item"><code>!persist</code>os-specific persistence</div>
+                        <div class="terminal-help-item"><code>!sleep 30</code>change beacon interval</div>
+                        <div class="terminal-help-item"><code>!kill</code>terminate the agent</div>
                     </div>
                 </div>
             </aside>
@@ -872,22 +862,22 @@
     <div class="modal terminal-history-modal" id="terminalHistoryModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Full terminal history</h3>
+                <h3>full terminal history</h3>
             </div>
             <div class="modal-body">
                 <div class="terminal-history-toolbar">
-                    <div class="terminal-history-summary" id="fullHistorySummary">Loading the full command archive...</div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        <button class="btn btn-small" id="refreshFullHistoryBtn">Refresh</button>
-                        <button class="btn btn-small" id="closeFullHistoryBtn">Close</button>
+                    <div class="terminal-history-summary" id="fullHistorySummary">loading the full command archive...</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn btn-small" id="refreshFullHistoryBtn">↻</button>
+                        <button class="btn btn-small" id="closeFullHistoryBtn">close</button>
                     </div>
                 </div>
                 <div class="terminal-history-list" id="fullHistoryList">
-                    <div class="terminal-history-empty">Open the archive to inspect every executed command and its latest stored output</div>
+                    <div class="terminal-history-empty">// open the archive to inspect every executed command and its stored output</div>
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="btn btn-small" id="loadMoreHistoryBtn">Load more</button>
+                <button class="btn btn-small" id="loadMoreHistoryBtn">load more</button>
             </div>
         </div>
     </div>

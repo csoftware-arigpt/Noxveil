@@ -3,581 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noxveil - Sign In</title>
+    <title>Noxveil // sign in</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .login-page {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .auth-shell {
             min-height: 100vh;
-            padding: 20px;
+            display: grid;
+            place-items: center;
+            padding: 24px;
         }
 
-        .login-shell {
-            width: min(100%, 1160px);
+        .auth-frame {
+            width: min(100%, 1080px);
             display: grid;
-            grid-template-columns: minmax(0, 1.08fr) minmax(420px, 0.92fr);
-            gap: 20px;
+            grid-template-columns: minmax(0, 1fr) minmax(380px, 0.85fr);
+            gap: 16px;
             align-items: stretch;
         }
 
-        .login-intro {
+        .auth-side,
+        .auth-card {
             position: relative;
+            border: 1px solid var(--line);
+            border-radius: var(--r-6);
+            background: var(--ink-1);
             overflow: hidden;
-            padding: clamp(24px, 4vw, 36px);
+        }
+
+        .auth-side {
+            padding: 32px;
             display: grid;
             align-content: space-between;
-            gap: 20px;
-            border-radius: 28px;
-            border: 1px solid rgba(57, 84, 121, 0.72);
-            background: linear-gradient(160deg, rgba(9, 18, 29, 0.92), rgba(16, 26, 45, 0.88));
-            box-shadow: var(--shadow-lg);
+            gap: 24px;
+            background: linear-gradient(180deg, var(--ink-2), var(--ink-1));
         }
 
-        .login-intro::before {
+        .auth-side::before {
             content: "";
             position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 36%);
-            pointer-events: none;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, var(--signal), transparent 60%);
         }
 
-        .login-intro-label,
-        .login-intro-title,
-        .login-intro-copy,
-        .login-intro-grid,
-        .login-intro-footer {
-            position: relative;
-            z-index: 1;
-        }
-
-        .login-intro-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 18px;
-            padding: 8px 14px;
-            border-radius: 999px;
-            border: 1px solid rgba(115, 199, 255, 0.24);
-            background: rgba(115, 199, 255, 0.08);
-            color: var(--info);
-            font-family: var(--font-mono);
-            font-size: 0.76rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .login-intro-title {
-            margin-bottom: 16px;
-            color: var(--text-light);
-            font-size: clamp(2.2rem, 5vw, 3.4rem);
-            line-height: 0.95;
-            letter-spacing: -0.04em;
-        }
-
-        .login-intro-title span {
-            color: var(--accent);
-        }
-
-        .login-intro-copy {
-            max-width: 52ch;
-            margin-bottom: 22px;
-            color: var(--text-muted);
-            font-size: 0.98rem;
-            line-height: 1.8;
-        }
-
-        .login-intro-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-        }
-
-        .login-intro-card {
-            padding: 14px 16px;
-            border-radius: 18px;
-            border: 1px solid rgba(57, 84, 121, 0.72);
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .login-intro-card-label {
-            margin-bottom: 6px;
-            color: var(--text-dim);
+        .auth-tag {
             font-family: var(--font-mono);
             font-size: 0.72rem;
-            letter-spacing: 0.08em;
+            color: var(--signal);
             text-transform: uppercase;
+            letter-spacing: 0.18em;
         }
 
-        .login-intro-card-value {
+        .auth-tag::before { content: "// "; color: var(--text-dim); }
+
+        .auth-headline {
+            font-family: var(--font-mono);
+            font-size: clamp(2rem, 4.5vw, 3rem);
+            line-height: 1;
+            letter-spacing: -0.02em;
             color: var(--text-light);
             font-weight: 600;
+            margin: 14px 0 18px;
         }
 
-        .login-intro-footer {
-            margin-top: 18px;
-            color: var(--text-dim);
-            font-size: 0.82rem;
+        .auth-headline strong { color: var(--signal); }
+
+        .auth-copy {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 0.92rem;
+            max-width: 50ch;
         }
 
-        .login-box {
-            position: relative;
-            overflow: hidden;
-            padding: 24px;
+        .auth-spec {
             display: grid;
-            grid-template-rows: auto auto 1fr auto auto;
-            gap: 16px;
-            border-radius: 28px;
-            border: 1px solid rgba(57, 84, 121, 0.72);
-            background: linear-gradient(160deg, rgba(9, 18, 29, 0.96), rgba(16, 26, 45, 0.9));
-            box-shadow: var(--shadow-lg);
+            gap: 0;
+            border-top: 1px solid var(--line);
         }
 
-        .login-box::before {
+        .auth-spec-row {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            border-bottom: 1px solid var(--line);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            line-height: 1.55;
+        }
+
+        .auth-spec-row:last-child { border-bottom: none; }
+
+        .auth-spec-key {
+            padding: 12px 14px 12px 0;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.7rem;
+            border-right: 1px solid var(--line);
+        }
+
+        .auth-spec-val {
+            padding: 12px 14px;
+            color: var(--text-light);
+        }
+
+        .auth-spec-val .ok { color: var(--signal); }
+
+        .auth-foot {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding-top: 14px;
+            border-top: 1px solid var(--line);
+        }
+
+        .auth-card {
+            padding: 28px;
+            display: grid;
+            grid-template-rows: auto auto 1fr auto;
+            gap: 18px;
+        }
+
+        .auth-card::before {
             content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--text-primary), var(--accent), var(--info));
-            animation: gradientShift 3s ease infinite;
-            background-size: 200% 200%;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--signal), transparent);
+            opacity: 0.6;
         }
 
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .login-logo {
-            text-align: left;
-            margin-bottom: 0;
-        }
-
-        .login-logo h1 {
-            font-size: clamp(1.5rem, 4vw, 2rem);
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 10px;
-        }
-
-        .login-logo .subtitle {
-            color: var(--text-muted);
+        .auth-card-head {
             font-family: var(--font-mono);
-            font-size: clamp(0.8rem, 2vw, 0.9rem);
-        }
-
-        .login-icon {
-            font-size: clamp(2.5rem, 6vw, 3.5rem);
-            display: block;
-            margin-bottom: 10px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .login-box-copy {
+            font-size: 0.78rem;
             color: var(--text-muted);
-            font-size: 0.95rem;
-            line-height: 1.7;
-        }
-
-        .login-form {
-            display: grid;
-            gap: 14px;
-            align-content: start;
-        }
-
-        .login-form-card {
-            padding: 18px;
-            border-radius: 20px;
-            border: 1px solid rgba(57, 84, 121, 0.58);
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .login-form-card-title {
-            margin-bottom: 14px;
-            color: var(--text-light);
-            font-family: var(--font-mono);
-            font-size: 0.88rem;
-            letter-spacing: 0.08em;
             text-transform: uppercase;
+            letter-spacing: 0.12em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .auth-card-head .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border: 1px solid var(--line);
+            border-radius: var(--r-3);
+            color: var(--text-dim);
+            font-size: 0.7rem;
         }
 
-        .form-group {
-            margin-bottom: 0;
+        .auth-card-head .pill::before {
+            content: "●";
+            color: var(--signal);
         }
 
-        .mfa-group {
-            overflow: hidden;
-            max-height: 0;
-            opacity: 0;
-            padding: 0 16px;
-            margin-bottom: 0;
-            pointer-events: none;
-            transform: translateY(-8px);
-            border: 1px solid transparent;
-            border-radius: 20px;
-            background: transparent;
-            transition:
-                max-height 0.25s ease,
-                opacity 0.2s ease,
-                transform 0.25s ease,
-                margin-bottom 0.25s ease,
-                padding 0.25s ease,
-                border-color 0.25s ease,
-                background 0.25s ease;
+        .auth-card-title {
+            font-family: var(--font-mono);
+            font-size: 1.4rem;
+            color: var(--text-light);
+            font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
-        .mfa-group.show {
-            max-height: 240px;
-            opacity: 1;
-            padding: 16px;
-            margin-bottom: 0;
-            pointer-events: auto;
-            transform: translateY(0);
-            border-color: rgba(115, 199, 255, 0.22);
-            background: rgba(115, 199, 255, 0.05);
+        .auth-card-sub {
+            margin-top: 4px;
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            line-height: 1.6;
         }
+
+        .auth-form { display: grid; gap: 14px; }
+
+        .auth-field label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .auth-field label::before { content: "▸ "; color: var(--signal); }
 
         .mfa-status {
             display: none;
-            margin-bottom: 0;
             padding: 12px 14px;
-            border-radius: 16px;
-            border: 1px solid rgba(115, 199, 255, 0.26);
-            background: rgba(115, 199, 255, 0.08);
-            color: var(--text-light);
-            font-size: 0.84rem;
-            line-height: 1.65;
-        }
-
-        .mfa-status.show {
-            display: block;
-        }
-
-        .mfa-status strong {
-            color: var(--info);
-        }
-
-        .mfa-card-title {
-            margin-bottom: 10px;
+            border: 1px solid var(--info-edge);
+            border-radius: var(--r-3);
+            background: var(--info-soft);
             color: var(--text-light);
             font-family: var(--font-mono);
-            font-size: 0.82rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .form-group label {
-            display: block;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin-bottom: 6px;
-            font-family: var(--font-mono);
-        }
-
-        .form-group input {
-            width: 100%;
-            transition: all 0.2s;
-        }
-
-        .form-help {
-            margin-top: 6px;
-            color: var(--text-dim);
-            font-size: 0.76rem;
-            line-height: 1.5;
-        }
-
-        .form-group input:focus {
-            transform: translateY(-1px);
-        }
-
-        .login-error {
-            background: var(--danger-bg);
-            border: 1px solid var(--danger);
-            color: var(--danger);
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            display: none;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .login-error.show {
-            display: flex;
-        }
-
-        .login-footer {
-            padding: 16px 18px;
-            border-radius: 20px;
-            border: 1px solid rgba(57, 84, 121, 0.58);
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-muted);
             font-size: 0.82rem;
             line-height: 1.6;
         }
 
-        .login-footer strong {
-            color: var(--warning);
+        .mfa-status.show { display: block; }
+        .mfa-status strong { color: var(--info); margin-right: 6px; }
+
+        .mfa-group { display: none; }
+        .mfa-group.show { display: block; }
+
+        .form-help {
+            margin-top: 6px;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            line-height: 1.55;
         }
 
-        .login-warning {
-            display: flex;
+        .login-error {
+            display: none;
             align-items: center;
-            justify-content: center;
             gap: 8px;
             padding: 10px 12px;
-            background: var(--warning-bg);
-            border-radius: 14px;
-            border: 1px solid rgba(255, 180, 84, 0.22);
-            font-size: 0.78rem;
-            color: var(--warning);
-        }
-
-        .btn-submit {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-submit::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.3s, height 0.3s;
-        }
-
-        .btn-submit:active::after {
-            width: 200px;
-            height: 200px;
-        }
-
-        .input-wrapper {
-            position: relative;
-        }
-
-        .input-icon {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-dim);
-            font-size: 1.1rem;
-            pointer-events: none;
-        }
-
-        .input-wrapper:focus-within .input-icon {
-            color: var(--text-primary);
-        }
-
-        .login-back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 0;
-            color: var(--text-secondary);
+            background: var(--alarm-soft);
+            border: 1px solid var(--alarm-edge);
+            color: var(--alarm);
+            border-radius: var(--r-3);
             font-family: var(--font-mono);
             font-size: 0.82rem;
         }
 
-        .login-back-link:hover {
+        .login-error.show { display: flex; }
+        .login-error::before { content: "[!]"; color: var(--alarm); font-weight: 600; }
+
+        .auth-submit {
+            width: 100%;
+            padding: 12px;
+            font-size: 0.86rem;
+            margin-top: 4px;
+        }
+
+        .auth-warning {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: var(--warn-soft);
+            border: 1px solid var(--warn-edge);
+            color: var(--warn);
+            border-radius: var(--r-3);
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            line-height: 1.5;
+        }
+
+        .auth-warning::before { content: "//"; color: var(--warn); }
+
+        .auth-bootstrap {
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: var(--r-3);
+            background: var(--ink-2);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .auth-bootstrap strong {
+            color: var(--signal);
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 6px;
+        }
+
+        .auth-bootstrap code {
             color: var(--text-light);
+            background: var(--ink-1);
+            padding: 1px 6px;
+            border-radius: 2px;
+            border: 1px solid var(--line);
         }
 
-        @media (max-width: 960px) {
-            .login-shell {
-                grid-template-columns: 1fr;
-            }
-
-            .login-box {
-                grid-template-rows: none;
-            }
+        .auth-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
 
-        @media (max-width: 720px) {
-            .login-page {
-                padding: 12px;
-            }
+        .auth-back:hover { color: var(--signal); }
 
-            .login-intro,
-            .login-box {
-                padding: 20px;
-                border-radius: 22px;
-            }
-
-            .login-logo {
-                text-align: center;
-            }
-
-            .login-logo h1 {
-                justify-content: center;
-            }
+        @media (max-width: 880px) {
+            .auth-frame { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="login-page">
-        <div class="login-shell">
-            <section class="login-intro">
+    <div class="auth-shell">
+        <div class="auth-frame">
+            <section class="auth-side">
                 <div>
-                    <div class="login-intro-label">Operator Access</div>
-                    <h1 class="login-intro-title">Back in control in <span>seconds</span>.</h1>
-                </div>
-                <p class="login-intro-copy">
-                    Noxveil keeps authentication fast and clean. Enter your credentials and you're in
-                    If your account uses a second factor, the prompt appears only when it's needed — no noise, no extra steps upfront
-                </p>
-
-                <div class="login-intro-grid">
-                    <div class="login-intro-card">
-                        <div class="login-intro-card-label">Session</div>
-                        <div class="login-intro-card-value">JWT-secured, auto-refreshed — stay signed in without interruption</div>
-                    </div>
-                    <div class="login-intro-card">
-                        <div class="login-intro-card-label">Extra verification</div>
-                        <div class="login-intro-card-value">MFA only appears for accounts that need it — invisible to everyone else</div>
-                    </div>
-                    <div class="login-intro-card">
-                        <div class="login-intro-card-label">Workspace</div>
-                        <div class="login-intro-card-value">Full access to agents, live terminals, and deployments</div>
-                    </div>
-                    <div class="login-intro-card">
-                        <div class="login-intro-card-label">First access</div>
-                        <div class="login-intro-card-value">Use <code>admin</code> and the startup password to get started</div>
-                    </div>
+                    <div class="auth-tag">operator access</div>
+                    <h1 class="auth-headline">Sign in. <strong>Resume.</strong></h1>
+                    <p class="auth-copy">
+                        Credentials get you in. If MFA is on for your account, the second factor appears automatically — never as upfront friction.
+                    </p>
                 </div>
 
-                <div class="login-intro-footer">
-                    Authorized use only. Test only environments you own or have written permission to access
+                <div class="auth-spec">
+                    <div class="auth-spec-row">
+                        <div class="auth-spec-key">Session</div>
+                        <div class="auth-spec-val">JWT · auto-refreshed · <span class="ok">silent</span></div>
+                    </div>
+                    <div class="auth-spec-row">
+                        <div class="auth-spec-key">2FA</div>
+                        <div class="auth-spec-val">TOTP · enrolled-only · invisible otherwise</div>
+                    </div>
+                    <div class="auth-spec-row">
+                        <div class="auth-spec-key">Workspace</div>
+                        <div class="auth-spec-val">agents · live shells · deploy · audit</div>
+                    </div>
+                    <div class="auth-spec-row">
+                        <div class="auth-spec-key">Bootstrap</div>
+                        <div class="auth-spec-val"><code>admin</code> · startup password</div>
+                    </div>
                 </div>
+
+                <div class="auth-foot">authorized lab use only · environments you own or have permission to test</div>
             </section>
 
-            <div class="login-box">
-                <div class="login-logo">
-                    <span class="login-icon">🔐</span>
-                    <h1>
-                        <span style="color: var(--accent);">⚡</span>
-                        Noxveil
-                    </h1>
-                    <div class="subtitle">Total operational control</div>
+            <div class="auth-card">
+                <div class="auth-card-head">
+                    <span>noxveil // auth</span>
+                    <span class="pill">link up</span>
                 </div>
 
-                <div class="login-box-copy">
-                    Enter your credentials and your workspace opens immediately. If MFA is active on this account, the verification step appears automatically — no friction otherwise
+                <div>
+                    <div class="auth-card-title">Sign in</div>
+                    <div class="auth-card-sub">Operator credentials → workspace.</div>
                 </div>
 
-                <form class="login-form" id="loginForm">
-                    <div class="login-form-card">
-                        <div class="login-form-card-title">Account details</div>
-                        <div class="form-group">
-                            <label for="username">
-                                <span style="margin-right: 5px;">👤</span> Username
-                            </label>
-                            <div class="input-wrapper">
-                                <input
-                                    type="text"
-                                    id="username"
-                                    name="username"
-                                    placeholder="Your operator username"
-                                    required
-                                    autocomplete="username"
-                                >
-                                <span class="input-icon">📧</span>
-                            </div>
-                        </div>
+                <form class="auth-form" id="loginForm">
+                    <div class="auth-field">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" placeholder="operator" required autocomplete="username">
+                    </div>
 
-                        <div class="form-group" style="margin-top: 14px;">
-                            <label for="password">
-                                <span style="margin-right: 5px;">🔑</span> Password
-                            </label>
-                            <div class="input-wrapper">
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    placeholder="Your password"
-                                    required
-                                    autocomplete="current-password"
-                                >
-                                <span class="input-icon">🔒</span>
-                            </div>
-                        </div>
+                    <div class="auth-field">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
                     </div>
 
                     <div class="mfa-status" id="mfaStatus">
-                        <strong id="mfaStatusLead">One more step.</strong>
-                        <span id="mfaStatusText">Your account is protected by an authenticator app. Enter the current 6-digit code to continue</span>
+                        <strong id="mfaStatusLead">2FA required.</strong>
+                        <span id="mfaStatusText">This account uses an authenticator app. Enter the current 6-digit code to continue.</span>
                     </div>
 
-                    <div class="form-group mfa-group" id="mfaGroup">
-                        <div class="mfa-card-title">Authenticator code</div>
-                        <label for="mfaCode">
-                            <span style="margin-right: 5px;">🛡️</span> Verification code
-                        </label>
-                        <div class="input-wrapper">
-                            <input
-                                type="text"
-                                id="mfaCode"
-                                name="mfaCode"
-                                placeholder="6-digit code from your authenticator app"
-                                inputmode="numeric"
-                                autocomplete="one-time-code"
-                                maxlength="6"
-                                pattern="[0-9]{6}"
-                            >
-                            <span class="input-icon">123</span>
-                        </div>
-                        <div class="form-help">
-                            This step only appears when MFA is enabled on your account — everyone else goes straight through
-                        </div>
+                    <div class="auth-field mfa-group" id="mfaGroup">
+                        <label for="mfaCode">Authenticator code</label>
+                        <input
+                            type="text"
+                            id="mfaCode"
+                            name="mfaCode"
+                            placeholder="000000"
+                            inputmode="numeric"
+                            autocomplete="one-time-code"
+                            maxlength="6"
+                            pattern="[0-9]{6}"
+                        >
+                        <div class="form-help">Only shown when the account requires it.</div>
                     </div>
 
                     <div class="login-error" id="loginError">
-                        <span>⚠️</span>
                         <span id="errorText"></span>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-submit" style="width:100%;">
-                        <span style="margin-right: 8px;">🚀</span>
-                        Sign in
-                    </button>
+                    <button type="submit" class="btn btn-primary auth-submit">→ Sign in</button>
                 </form>
 
-                <div class="login-warning">
-                    <span>⚠️</span>
-                    <span>Authorized operators only — test only systems you own or have written permission to access</span>
+                <div style="display: grid; gap: 12px;">
+                    <div class="auth-warning">authorized operators only — test only systems you own or have written permission to access</div>
+                    <div class="auth-bootstrap">
+                        <strong>First time</strong>
+                        Username: <code>admin</code><br>
+                        Password: from <code>INITIAL_ADMIN_PASSWORD</code> or <code>data/initial_admin_password.txt</code>
+                    </div>
+                    <a href="/" class="auth-back">← back to home</a>
                 </div>
-
-                <div class="login-footer">
-                    <div><strong>First time signing in?</strong></div>
-                    <div style="font-family: var(--font-mono); color: var(--text-secondary); margin-top: 6px;">
-                        Username: <code>admin</code>
-                    </div>
-                    <div style="font-family: var(--font-mono); color: var(--text-secondary); margin-top: 6px;">
-                        Password set via <code>INITIAL_ADMIN_PASSWORD</code> or <code>data/initial_admin_password.txt</code>
-                    </div>
-                    <div style="margin-top: 10px; font-size: 0.74rem; opacity: 0.78;">
-                        By signing in you confirm you are operating in an environment you own or have explicit written authorization to use
-                    </div>
-                </div>
-
-                <a href="/" class="login-back-link">← Back to home</a>
             </div>
         </div>
     </div>
@@ -608,32 +423,24 @@
                 mfaInput.required = visible;
                 if (!visible) {
                     mfaInput.value = '';
-                    mfaStatusText.textContent = 'This operator uses an authenticator app. Enter the current 6-digit code to finish signing in.';
+                    mfaStatusText.textContent = 'This account uses an authenticator app. Enter the current 6-digit code to continue.';
                     return;
                 }
-                if (message) {
-                    mfaStatusText.textContent = message;
-                }
+                if (message) mfaStatusText.textContent = message;
             };
 
             errorEl.classList.remove('show');
             errorText.textContent = '';
 
             const originalBtnText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<span class="spinner"></span> Signing in...';
+            submitBtn.innerHTML = '<span class="spinner"></span> Authenticating...';
             submitBtn.disabled = true;
 
             try {
                 const response = await fetch('/api/v1/auth/login', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password,
-                        mfa_code: mfaCode
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, mfa_code: mfaCode })
                 });
 
                 const data = await response.json().catch(() => ({}));
@@ -643,17 +450,15 @@
                     Auth.setToken(data.access_token);
                     Auth.setRefreshToken(data.refresh_token);
 
-                    submitBtn.innerHTML = '✅ Signed in. Opening dashboard...';
-                    submitBtn.style.background = 'var(--success)';
-                    submitBtn.style.borderColor = 'var(--success)';
-                    submitBtn.style.color = 'var(--bg-primary)';
+                    submitBtn.innerHTML = '✓ authenticated';
+                    submitBtn.style.background = 'var(--signal)';
 
                     setTimeout(() => {
                         window.location.href = '/dashboard';
-                    }, 800);
+                    }, 600);
                 } else {
                     const mfaRequired = Boolean(detail && detail.mfa_required);
-                    const message = detail?.message || data.detail || 'We could not verify those credentials.';
+                    const message = detail?.message || data.detail || 'Could not verify those credentials.';
                     errorText.textContent = message;
                     errorEl.classList.add('show');
 
@@ -667,18 +472,10 @@
 
                     submitBtn.innerHTML = originalBtnText;
                     submitBtn.disabled = false;
-
-                    document.querySelector('.login-box').animate([
-                        { transform: 'translateX(0)' },
-                        { transform: 'translateX(-10px)' },
-                        { transform: 'translateX(10px)' },
-                        { transform: 'translateX(0)' }
-                    ], { duration: 300 });
                 }
             } catch (error) {
-                errorText.textContent = 'We could not reach the server. Make sure Noxveil is running and try again.';
+                errorText.textContent = 'Could not reach server. Make sure Noxveil is running.';
                 errorEl.classList.add('show');
-                
                 submitBtn.innerHTML = originalBtnText;
                 submitBtn.disabled = false;
             }
@@ -694,14 +491,10 @@
         });
 
         document.getElementById('password').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('loginForm').requestSubmit();
-            }
+            if (e.key === 'Enter') document.getElementById('loginForm').requestSubmit();
         });
         document.getElementById('mfaCode').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('loginForm').requestSubmit();
-            }
+            if (e.key === 'Enter') document.getElementById('loginForm').requestSubmit();
         });
     </script>
 </body>

@@ -1179,8 +1179,8 @@ const Terminal = {
         document.getElementById("copyTranscriptBtn").addEventListener("click", () => this.copyTranscript());
         document.getElementById("saveTranscriptBtn").addEventListener("click", () => this.saveTranscript());
         document.getElementById("clearTranscriptBtn").addEventListener("click", () => this.clearTranscriptView());
-        document.getElementById("killAgentBtn").addEventListener("click", () => {
-            if (window.confirm("Kill this agent?")) {
+        document.getElementById("killAgentBtn").addEventListener("click", async () => {
+            if (await window.UIConfirm("Kill this agent?", "Kill agent")) {
                 this.sendCommand("!kill");
             }
         });

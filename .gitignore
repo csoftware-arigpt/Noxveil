@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Runtime data (database, credentials, keys, logs)
+data/
+
+# macOS
+.DS_Store
+
+# Node / tooling
+node_modules/

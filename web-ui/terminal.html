@@ -3,866 +3,264 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
     <title>Noxveil // agent shell</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .terminal-page {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: var(--ink-0);
-        }
-
-        .terminal-shell-header {
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            background: var(--ink-1);
-            border-bottom: 1px solid var(--line);
-        }
-
-        .terminal-shell-header::after {
-            content: "";
-            position: absolute;
-            left: 0; right: 0; bottom: -1px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--signal-edge) 30%, var(--signal-edge) 70%, transparent);
-            opacity: 0.5;
-        }
-
-        .terminal-shell-header .container {
-            padding-top: 14px;
-            padding-bottom: 14px;
-        }
-
-        .terminal-hero {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .terminal-hero-copy { max-width: 680px; }
-
-        .terminal-eyebrow {
-            font-family: var(--font-mono);
-            color: var(--signal);
-            font-size: 0.72rem;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-
-        .terminal-eyebrow::before { content: "// "; color: var(--text-dim); }
-
-        .terminal-title-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .terminal-title-row h1 {
-            margin: 0;
-            font-family: var(--font-mono);
-            font-size: clamp(1.4rem, 3vw, 2rem);
-            color: var(--text-light);
-            font-weight: 600;
-            letter-spacing: -0.01em;
-        }
-
-        .terminal-subtitle {
-            margin-top: 8px;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-            font-size: 0.84rem;
-            max-width: 60ch;
-        }
-
-        .terminal-status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 10px;
-            border-radius: var(--r-3);
-            border: 1px solid var(--warn-edge);
-            background: var(--warn-soft);
-            font-family: var(--font-mono);
-            font-size: 0.74rem;
-            color: var(--warn);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-        }
-
-        .terminal-status-pill .dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: currentColor;
-            box-shadow: 0 0 8px currentColor;
-        }
-
-        .terminal-status-pill.waiting {
-            color: var(--warn);
-            border-color: var(--warn-edge);
-            background: var(--warn-soft);
-        }
-
-        .terminal-status-pill.disconnected {
-            color: var(--alarm);
-            border-color: var(--alarm-edge);
-            background: var(--alarm-soft);
-        }
-
-        .terminal-status-pill:not(.waiting):not(.disconnected) {
-            color: var(--signal);
-            border-color: var(--signal-edge);
-            background: var(--signal-soft);
-        }
-
         .terminal-toolbar {
             display: flex;
             align-items: center;
             gap: 6px;
             flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-
-        .terminal-workspace {
-            display: grid;
-            grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
-            gap: 14px;
-            padding-top: 18px;
-            padding-bottom: 18px;
-        }
-
-        .terminal-main,
-        .terminal-sidebar-card {
-            border: 1px solid var(--line);
-            border-radius: var(--r-6);
-            background: var(--ink-1);
-        }
-
-        .terminal-main {
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            min-height: 720px;
-        }
-
-        .terminal-main-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-
-        .terminal-main-title {
-            color: var(--text-light);
-            font-family: var(--font-mono);
-            font-size: 0.86rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-
-        .terminal-main-title::before {
-            content: "▸ ";
-            color: var(--signal);
-        }
-
-        .terminal-main-meta {
-            color: var(--text-dim);
-            font-size: 0.74rem;
-            font-family: var(--font-mono);
-        }
-
-        .terminal-meta-divider {
-            opacity: 0.45;
-            margin: 0 8px;
-            color: var(--text-dim);
-        }
-
-        .terminal-screen {
-            flex: 1;
-            background: var(--ink-0);
+            padding: 10px 12px;
             border: 1px solid var(--line);
             border-radius: var(--r-4);
-            padding: 14px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .terminal-screen::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, var(--signal), transparent 60%);
-            opacity: 0.4;
-        }
-
-        .terminal-output {
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-
-        .terminal-input-area {
-            margin-top: 12px;
-            display: grid;
-            grid-template-columns: auto auto minmax(0, 1fr) auto;
-            gap: 8px;
-            align-items: center;
-            padding: 10px 12px;
-            border: 1px solid var(--line);
-            border-radius: var(--r-3);
             background: var(--ink-1);
         }
 
-        .terminal-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .terminal-sidebar-card {
-            padding: 16px;
-        }
-
-        .sidebar-card-title {
-            margin-bottom: 12px;
-            font-family: var(--font-mono);
-            font-size: 0.76rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: var(--text-muted);
-        }
-
-        .sidebar-card-title::before {
-            content: "▸ ";
-            color: var(--signal);
-        }
-
-        .agent-identity-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 8px;
-        }
-
-        .agent-identity-item,
-        .action-group,
-        .artifact-panel {
-            min-width: 0;
-            padding: 10px 12px;
-            border-radius: var(--r-3);
-            border: 1px solid var(--line);
-            background: var(--ink-2);
-        }
-
-        .identity-label {
-            color: var(--text-dim);
-            font-family: var(--font-mono);
-            font-size: 0.66rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-        }
-
-        .identity-value {
-            margin-top: 4px;
-            color: var(--text-light);
-            font-family: var(--font-mono);
-            word-break: break-word;
-            font-size: 0.84rem;
-        }
-
-        .action-stack { display: grid; gap: 10px; }
-
-        .action-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .action-row .btn {
-            flex: 1 1 0;
-            min-width: 0;
-            justify-content: center;
-        }
-
-        .action-group label {
-            display: block;
-            margin-bottom: 6px;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-
-        .action-group label::before {
-            content: "▸ ";
-            color: var(--signal);
-        }
-
-        .action-group input[type="text"],
-        .action-group input[type="number"] {
-            margin-bottom: 8px;
-        }
-
-        .artifact-panel { min-height: 160px; }
-
-        .artifact-empty {
-            color: var(--text-dim);
-            font-family: var(--font-mono);
-            font-size: 0.82rem;
-            line-height: 1.6;
-        }
-
-        .artifact-preview-image {
-            width: 100%;
-            max-height: 320px;
-            object-fit: contain;
-            border-radius: var(--r-3);
-            border: 1px solid var(--line);
-            background: var(--ink-0);
-        }
-
-        .artifact-meta {
-            margin-top: 10px;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-            font-size: 0.78rem;
-            line-height: 1.55;
-            word-break: break-word;
-        }
-
-        .artifact-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-            flex-wrap: wrap;
-        }
-
-        .history-list,
-        .preset-grid {
-            display: grid;
-            gap: 8px;
-        }
-
-        .history-list-helper {
-            margin-bottom: 10px;
-            color: var(--text-dim);
-            font-size: 0.74rem;
-            line-height: 1.55;
-            font-family: var(--font-mono);
-        }
-
-        .history-item {
-            padding: 10px;
-            border-radius: var(--r-3);
-            border: 1px solid var(--line);
-            background: var(--ink-2);
-        }
-
-        button.history-item {
-            width: 100%;
-            cursor: pointer;
-            text-align: left;
-            color: inherit;
-            transition: border-color var(--transition-fast), background var(--transition-fast);
-        }
-
-        button.history-item:hover {
-            border-color: var(--signal-edge);
-            background: var(--ink-3);
-        }
-
-        .history-command {
-            color: var(--text-light);
-            font-family: var(--font-mono);
-            font-size: 0.78rem;
-            line-height: 1.5;
-            word-break: break-word;
-        }
-
-        .history-command::before {
-            content: "$ ";
-            color: var(--signal);
-        }
-
-        .history-meta {
-            margin-top: 6px;
-            color: var(--text-dim);
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            line-height: 1.5;
-        }
-
-        .preset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
-        .terminal-preset {
-            width: 100%;
-            justify-content: center;
-            min-height: 36px;
-        }
-
-        .terminal-help-grid { display: grid; gap: 6px; }
-
-        .terminal-help-item {
-            padding: 9px 10px;
-            border-radius: var(--r-3);
-            border: 1px solid var(--line);
-            background: var(--ink-2);
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-            font-size: 0.78rem;
-            line-height: 1.5;
-        }
-
-        .terminal-help-item code {
-            display: inline-block;
-            margin-right: 6px;
-            color: var(--signal);
-            background: var(--ink-1);
-            padding: 2px 6px;
-            border-radius: 2px;
-            border: 1px solid var(--line);
-            font-size: 0.74rem;
-        }
-
-        .session-summary {
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-            font-size: 0.74rem;
-            line-height: 1.5;
-        }
-
-        .session-stack { display: grid; gap: 8px; }
-
-        .session-row {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            gap: 8px;
-            align-items: stretch;
-        }
-
-        .session-select {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: var(--r-3);
-            border: 1px solid var(--line);
-            background: var(--ink-2);
-            color: inherit;
-            cursor: pointer;
-            text-align: left;
-            transition: border-color var(--transition-fast), background var(--transition-fast);
-        }
-
-        .session-select:hover {
-            border-color: var(--signal-edge);
-            background: var(--ink-3);
-        }
-
-        .session-select.active {
-            border-color: var(--signal);
-            background: var(--signal-soft);
-        }
-
-        .session-select.closed {
-            border-color: var(--alarm-edge);
-            background: var(--alarm-soft);
-        }
-
-        .session-select.switching {
-            border-color: var(--warn-edge);
-            background: var(--warn-soft);
-        }
-
-        .session-title-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            margin-bottom: 4px;
-        }
-
-        .session-title {
-            color: var(--text-light);
-            font-family: var(--font-mono);
-            font-size: 0.82rem;
-        }
-
-        .session-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 3px 7px;
-            border-radius: var(--r-3);
-            border: 1px solid var(--line);
-            font-family: var(--font-mono);
-            font-size: 0.66rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            white-space: nowrap;
-        }
-
-        .session-pill.open { color: var(--signal); border-color: var(--signal-edge); background: var(--signal-soft); }
-        .session-pill.closed { color: var(--alarm); border-color: var(--alarm-edge); background: var(--alarm-soft); }
-        .session-pill.unread { color: var(--warn); border-color: var(--warn-edge); background: var(--warn-soft); }
-
-        .session-meta {
-            color: var(--text-dim);
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            line-height: 1.5;
-        }
-
-        .session-close {
-            min-width: 38px;
-            border-radius: var(--r-3);
-        }
-
-        .terminal-history-modal .modal-content {
-            max-width: min(1120px, 96vw);
-        }
-
-        .terminal-history-toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-
-        .terminal-history-summary {
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-            font-size: 0.82rem;
-        }
-
-        .terminal-history-list { display: grid; gap: 10px; }
-
-        .terminal-history-entry {
-            border: 1px solid var(--line);
-            border-radius: var(--r-4);
-            background: var(--ink-2);
-            overflow: hidden;
-        }
-
-        .terminal-history-entry summary {
-            list-style: none;
-            cursor: pointer;
-            padding: 12px 14px;
-        }
-
-        .terminal-history-entry summary::-webkit-details-marker { display: none; }
-
-        .terminal-history-entry[open] summary {
-            border-bottom: 1px solid var(--line);
-            background: var(--ink-3);
-        }
-
-        .terminal-history-entry-top {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .terminal-history-command {
-            color: var(--text-light);
-            font-family: var(--font-mono);
-            font-size: 0.84rem;
-            line-height: 1.55;
-            word-break: break-word;
-        }
-
-        .terminal-history-command::before {
-            content: "$ ";
-            color: var(--signal);
-        }
-
-        .terminal-history-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 8px;
-            border-radius: var(--r-3);
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            border: 1px solid var(--line);
-            color: var(--text-secondary);
-            background: var(--ink-1);
-            white-space: nowrap;
-        }
-
-        .terminal-history-badge.completed { color: var(--signal); border-color: var(--signal-edge); background: var(--signal-soft); }
-        .terminal-history-badge.error { color: var(--alarm); border-color: var(--alarm-edge); background: var(--alarm-soft); }
-        .terminal-history-badge.pending,
-        .terminal-history-badge.sent { color: var(--warn); border-color: var(--warn-edge); background: var(--warn-soft); }
-
-        .terminal-history-meta {
-            margin-top: 6px;
-            color: var(--text-dim);
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            line-height: 1.5;
-        }
-
-        .terminal-history-output { padding: 14px; }
-
-        .terminal-history-output-label {
-            margin-bottom: 6px;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-
-        .terminal-history-output pre {
-            margin: 0;
-            white-space: pre-wrap;
-            word-break: break-word;
-            color: var(--text-light);
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            line-height: 1.65;
-        }
-
-        .terminal-history-empty {
-            padding: 16px;
-            border-radius: var(--r-3);
-            border: 1px solid var(--line);
-            background: var(--ink-2);
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-            line-height: 1.65;
-        }
-
-        @media (max-width: 1180px) {
-            .terminal-workspace { grid-template-columns: 1fr; }
-            .terminal-main { min-height: 560px; }
-        }
+        .terminal-toolbar .spacer { flex: 1; }
 
         @media (max-width: 720px) {
-            .terminal-toolbar { width: 100%; justify-content: stretch; }
-            .terminal-toolbar .btn,
-            .action-row .btn { width: 100%; }
-            .terminal-input-area { grid-template-columns: 1fr; }
-            .agent-identity-grid { grid-template-columns: 1fr; }
+            .terminal-toolbar .btn { flex: 1 1 40%; }
         }
     </style>
 </head>
 <body>
-    <div class="terminal-page">
-        <header class="terminal-shell-header">
-            <div class="container">
-                <div class="terminal-hero">
-                    <div class="terminal-hero-copy">
-                        <div class="terminal-eyebrow">agent workspace · live</div>
-                        <div class="terminal-title-row">
-                            <h1>agent shell</h1>
-                            <div class="terminal-status-pill waiting" id="heroStatusPill">
-                                <span class="dot"></span>
-                                <span id="connectionStatus">connecting...</span>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+            <div class="sidebar-brand">
+                <span class="brand-mark" aria-hidden="true">N</span>
+                <span class="brand-name">Noxveil<span class="brand-sub">opcon</span></span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">workspace</div>
+                <a class="sidebar-link" href="/dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                    Dashboard
+                </a>
+                <a class="sidebar-link active" href="/terminal" id="navTerminalLink" aria-current="page">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                    Agent terminal
+                </a>
+                <a class="sidebar-link" href="/shell">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="7" rx="2"/><rect x="2" y="14" width="20" height="7" rx="2"/><line x1="6" y1="6.5" x2="6.01" y2="6.5"/><line x1="6" y1="17.5" x2="6.01" y2="17.5"/></svg>
+                    Server shell
+                </a>
+            </nav>
+            <div class="sidebar-foot">
+                <div class="operator-chip">
+                    <span class="operator-dot" aria-hidden="true"></span>
+                    <span>operator</span>
+                </div>
+                <button class="btn btn-small btn-ghost" id="logoutBtn">Sign out</button>
+            </div>
+        </aside>
+
+        <div class="sidebar-scrim" id="sidebarScrim" aria-hidden="true"></div>
+
+        <div class="app-main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="icon-btn" id="sidebarToggle" aria-label="Toggle navigation" aria-controls="sidebar">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+                    </button>
+                    <div class="topbar-titles">
+                        <div class="topbar-title">Agent shell</div>
+                        <div class="topbar-sub">live workspace · files · sessions</div>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="terminal-status-pill waiting" id="heroStatusPill">
+                        <span class="dot" aria-hidden="true"></span>
+                        <span id="connectionStatus">connecting...</span>
+                    </div>
+                    <a href="/dashboard" class="btn btn-small btn-ghost">dashboard</a>
+                    <button class="btn btn-small btn-primary" id="newSessionBtn">+ shell</button>
+                </div>
+            </header>
+
+            <main class="page">
+                <div class="terminal-toolbar">
+                    <button class="btn btn-small" id="openFullHistoryBtn">history</button>
+                    <button class="btn btn-small" id="refreshInfoBtn">refresh</button>
+                    <button class="btn btn-small btn-info" id="screenshotBtn">screenshot</button>
+                    <button class="btn btn-small btn-warning" id="persistBtn">persist</button>
+                    <span class="spacer"></span>
+                    <button class="btn btn-small" id="copyTranscriptBtn">copy log</button>
+                    <button class="btn btn-small" id="saveTranscriptBtn">save log</button>
+                    <button class="btn btn-small" id="clearTranscriptBtn">clear</button>
+                    <button class="btn btn-small btn-danger" id="killAgentBtn">kill</button>
+                </div>
+
+                <div class="terminal-workspace">
+                    <section class="terminal-main">
+                        <div class="terminal-main-top">
+                            <div>
+                                <div class="terminal-main-title">terminal</div>
+                                <div class="terminal-main-meta">
+                                    <span id="terminalModeLabel">mode: checking...</span>
+                                    <span class="terminal-meta-divider">·</span>
+                                    <span id="sessionIdLabel">session: pending</span>
+                                </div>
                             </div>
                         </div>
-                        <p class="terminal-subtitle">
-                            commands · files · screenshots · sessions — all in one view
-                        </p>
-                    </div>
-                    <div class="terminal-toolbar">
-                        <a href="/dashboard" class="btn btn-small">← back</a>
-                        <button class="btn btn-small btn-primary" id="newSessionBtn">+ shell</button>
-                        <button class="btn btn-small" id="openFullHistoryBtn">history</button>
-                        <button class="btn btn-small" id="refreshInfoBtn">refresh</button>
-                        <button class="btn btn-small btn-info" id="screenshotBtn">screenshot</button>
-                        <button class="btn btn-small btn-warning" id="persistBtn">persist</button>
-                        <button class="btn btn-small" id="copyTranscriptBtn">copy log</button>
-                        <button class="btn btn-small" id="saveTranscriptBtn">save log</button>
-                        <button class="btn btn-small" id="clearTranscriptBtn">clear</button>
-                        <button class="btn btn-small btn-danger" id="killAgentBtn">kill</button>
-                    </div>
-                </div>
-            </div>
-        </header>
 
-        <main class="terminal-workspace container">
-            <section class="terminal-main">
-                <div class="terminal-main-top">
-                    <div>
-                        <div class="terminal-main-title">terminal</div>
-                        <div class="terminal-main-meta">
-                            <span id="terminalModeLabel">mode: checking...</span>
-                            <span class="terminal-meta-divider">·</span>
-                            <span id="sessionIdLabel">session: pending</span>
+                        <div class="terminal-screen terminal">
+                            <div class="terminal-output" id="terminalOutput">
+                                <div class="text-dim">// connecting to agent...</div>
+                            </div>
+                            <div class="terminal-input-area">
+                                <span class="connection-status" id="statusIndicator" aria-hidden="true">●</span>
+                                <span class="terminal-prompt" aria-hidden="true">$</span>
+                                <input
+                                    type="text"
+                                    class="terminal-input"
+                                    id="commandInput"
+                                    placeholder="enter a command..."
+                                    autocomplete="off"
+                                    aria-label="Command input"
+                                >
+                                <button class="btn btn-small btn-primary" id="sendBtn">send</button>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </section>
 
-                <div class="terminal-screen terminal">
-                    <div class="terminal-output" id="terminalOutput">
-                        <div class="text-dim">// connecting to agent...</div>
-                    </div>
-                    <div class="terminal-input-area">
-                        <span class="connection-status connected" id="statusIndicator">●</span>
-                        <span class="terminal-prompt">$</span>
-                        <input
-                            type="text"
-                            class="terminal-input"
-                            id="commandInput"
-                            placeholder="enter a command..."
-                            autocomplete="off"
-                        >
-                        <button class="btn btn-small btn-primary" id="sendBtn">send</button>
-                    </div>
-                </div>
-            </section>
+                    <aside class="terminal-sidebar">
+                        <div class="terminal-sidebar-card">
+                            <div class="sidebar-card-title">agent details</div>
+                            <div class="agent-identity-grid">
+                                <div class="agent-identity-item">
+                                    <div class="identity-label">hostname</div>
+                                    <div class="identity-value" id="agentHostname">-</div>
+                                </div>
+                                <div class="agent-identity-item">
+                                    <div class="identity-label">user</div>
+                                    <div class="identity-value" id="agentUser">-</div>
+                                </div>
+                                <div class="agent-identity-item">
+                                    <div class="identity-label">platform</div>
+                                    <div class="identity-value" id="agentOS">-</div>
+                                </div>
+                                <div class="agent-identity-item">
+                                    <div class="identity-label">internal ip</div>
+                                    <div class="identity-value" id="agentIP">-</div>
+                                </div>
+                                <div class="agent-identity-item">
+                                    <div class="identity-label">uptime</div>
+                                    <div class="identity-value" id="agentUptime">-</div>
+                                </div>
+                                <div class="agent-identity-item">
+                                    <div class="identity-label">callback</div>
+                                    <div class="identity-value" id="agentCallback">-</div>
+                                </div>
+                            </div>
+                        </div>
 
-            <aside class="terminal-sidebar">
-                <div class="terminal-sidebar-card">
-                    <div class="sidebar-card-title">agent details</div>
-                    <div class="agent-identity-grid">
-                        <div class="agent-identity-item">
-                            <div class="identity-label">hostname</div>
-                            <div class="identity-value" id="agentHostname">-</div>
+                        <div class="terminal-sidebar-card">
+                            <div class="card-header" style="margin-bottom: 10px; padding-bottom: 0; border-bottom: none;">
+                                <div class="sidebar-card-title" style="margin-bottom: 0;">shell sessions</div>
+                                <div class="session-summary" id="sessionSummary">waiting for sessions...</div>
+                            </div>
+                            <div class="history-list-helper">// multiple shells · per-session transcript</div>
+                            <div class="session-stack" id="sessionList">
+                                <div class="history-item">
+                                    <div class="history-command">no shell sessions yet</div>
+                                    <div class="history-meta">sessions appear here once interactive transport is ready</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="agent-identity-item">
-                            <div class="identity-label">user</div>
-                            <div class="identity-value" id="agentUser">-</div>
-                        </div>
-                        <div class="agent-identity-item">
-                            <div class="identity-label">platform</div>
-                            <div class="identity-value" id="agentOS">-</div>
-                        </div>
-                        <div class="agent-identity-item">
-                            <div class="identity-label">internal ip</div>
-                            <div class="identity-value" id="agentIP">-</div>
-                        </div>
-                        <div class="agent-identity-item">
-                            <div class="identity-label">uptime</div>
-                            <div class="identity-value" id="agentUptime">-</div>
-                        </div>
-                        <div class="agent-identity-item">
-                            <div class="identity-label">callback</div>
-                            <div class="identity-value" id="agentCallback">-</div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="terminal-sidebar-card">
-                    <div class="card-header" style="margin-bottom: 12px; padding-bottom: 0; border-bottom: none;">
-                        <div class="sidebar-card-title" style="margin-bottom: 0;">shell sessions</div>
-                        <div class="session-summary" id="sessionSummary">waiting for sessions...</div>
-                    </div>
-                    <div class="history-list-helper">// multiple shells · per-session transcript</div>
-                    <div class="session-stack" id="sessionList">
-                        <div class="history-item">
-                            <div class="history-command">no shell sessions yet</div>
-                            <div class="history-meta">sessions appear here once interactive transport is ready</div>
+                        <div class="terminal-sidebar-card">
+                            <div class="sidebar-card-title">file operations</div>
+                            <div class="action-stack">
+                                <div class="action-group">
+                                    <label for="downloadPath">download remote file</label>
+                                    <input type="text" id="downloadPath" placeholder="/etc/hosts">
+                                    <button class="btn btn-small btn-info" id="downloadFileBtn">queue download</button>
+                                </div>
+                                <div class="action-group">
+                                    <label for="uploadPath">upload local file</label>
+                                    <input type="text" id="uploadPath" placeholder="/tmp/payload.bin">
+                                    <input type="file" id="uploadFileInput" aria-label="Local file to upload">
+                                    <button class="btn btn-small btn-primary" id="uploadFileBtn">upload</button>
+                                </div>
+                                <div class="action-group">
+                                    <label for="sleepInterval">callback interval</label>
+                                    <input type="number" id="sleepInterval" min="1" max="3600" placeholder="5">
+                                    <button class="btn btn-small" id="sleepBtn">update sleep</button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="terminal-sidebar-card">
-                    <div class="sidebar-card-title">file operations</div>
-                    <div class="action-stack">
-                        <div class="action-group">
-                            <label for="downloadPath">download remote file</label>
-                            <input type="text" id="downloadPath" placeholder="/etc/hosts">
-                            <button class="btn btn-small btn-info" id="downloadFileBtn">queue download</button>
+                        <div class="terminal-sidebar-card">
+                            <div class="sidebar-card-title">artifacts</div>
+                            <div class="artifact-panel" id="artifactPanel">
+                                <div class="artifact-empty">
+                                    // screenshots · downloads · upload confirmations land here
+                                </div>
+                            </div>
                         </div>
-                        <div class="action-group">
-                            <label for="uploadPath">upload local file</label>
-                            <input type="text" id="uploadPath" placeholder="/tmp/payload.bin">
-                            <input type="file" id="uploadFileInput">
-                            <button class="btn btn-small btn-primary" id="uploadFileBtn">upload</button>
-                        </div>
-                        <div class="action-group">
-                            <label for="sleepInterval">callback interval</label>
-                            <input type="number" id="sleepInterval" min="1" max="3600" placeholder="5">
-                            <button class="btn btn-small" id="sleepBtn">update sleep</button>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="terminal-sidebar-card">
-                    <div class="sidebar-card-title">artifacts</div>
-                    <div class="artifact-panel" id="artifactPanel">
-                        <div class="artifact-empty">
-                            // screenshots · downloads · upload confirmations land here
+                        <div class="terminal-sidebar-card">
+                            <div class="sidebar-card-title">quick actions</div>
+                            <div class="preset-grid" id="terminalPresetGrid">
+                                <button class="btn btn-small terminal-preset" data-terminal-command="whoami">whoami</button>
+                                <button class="btn btn-small terminal-preset" data-terminal-command="hostname">hostname</button>
+                                <button class="btn btn-small terminal-preset" data-terminal-command="pwd">pwd</button>
+                                <button class="btn btn-small terminal-preset" data-terminal-command="!info">!info</button>
+                                <button class="btn btn-small terminal-preset" data-terminal-command="!screenshot">!screenshot</button>
+                                <button class="btn btn-small terminal-preset" data-terminal-command="!sleep 30">!sleep 30</button>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="terminal-sidebar-card">
-                    <div class="sidebar-card-title">quick actions</div>
-                    <div class="preset-grid" id="terminalPresetGrid">
-                        <button class="btn btn-small terminal-preset" data-terminal-command="whoami">whoami</button>
-                        <button class="btn btn-small terminal-preset" data-terminal-command="hostname">hostname</button>
-                        <button class="btn btn-small terminal-preset" data-terminal-command="pwd">pwd</button>
-                        <button class="btn btn-small terminal-preset" data-terminal-command="!info">!info</button>
-                        <button class="btn btn-small terminal-preset" data-terminal-command="!screenshot">!screenshot</button>
-                        <button class="btn btn-small terminal-preset" data-terminal-command="!sleep 30">!sleep 30</button>
-                    </div>
-                </div>
-
-                <div class="terminal-sidebar-card">
-                    <div class="card-header" style="margin-bottom: 12px; padding-bottom: 0; border-bottom: none;">
-                        <div class="sidebar-card-title" style="margin-bottom: 0;">command history</div>
-                        <button class="btn btn-small" id="clearCommandHistoryBtn">clear</button>
-                    </div>
-                    <div class="history-list-helper">// ↑/↓ in input or click to load</div>
-                    <div class="history-list" id="commandHistoryList">
-                        <div class="history-item">
-                            <div class="history-command">no commands yet</div>
-                            <div class="history-meta">commands sent from this workspace are saved locally</div>
+                        <div class="terminal-sidebar-card">
+                            <div class="card-header" style="margin-bottom: 10px; padding-bottom: 0; border-bottom: none;">
+                                <div class="sidebar-card-title" style="margin-bottom: 0;">command history</div>
+                                <button class="btn btn-small" id="clearCommandHistoryBtn">clear</button>
+                            </div>
+                            <div class="history-list-helper">// ↑/↓ in input or click to load</div>
+                            <div class="history-list" id="commandHistoryList">
+                                <div class="history-item">
+                                    <div class="history-command">no commands yet</div>
+                                    <div class="history-meta">commands sent from this workspace are saved locally</div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="terminal-sidebar-card">
-                    <div class="card-header" style="margin-bottom: 12px; padding-bottom: 0; border-bottom: none;">
-                        <div class="sidebar-card-title" style="margin-bottom: 0;">recent task history</div>
-                        <button class="btn btn-small" id="refreshHistoryBtn">↻</button>
-                    </div>
-                    <div class="history-list" id="recentHistoryList">
-                        <div class="history-item">
-                            <div class="history-command">loading recent task history...</div>
+                        <div class="terminal-sidebar-card">
+                            <div class="card-header" style="margin-bottom: 10px; padding-bottom: 0; border-bottom: none;">
+                                <div class="sidebar-card-title" style="margin-bottom: 0;">recent task history</div>
+                                <button class="btn btn-small" id="refreshHistoryBtn">↻</button>
+                            </div>
+                            <div class="history-list" id="recentHistoryList">
+                                <div class="history-item">
+                                    <div class="history-command">loading recent task history...</div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="terminal-sidebar-card">
-                    <div class="sidebar-card-title">command guide</div>
-                    <div class="terminal-help-grid">
-                        <div class="terminal-help-item"><code>!info</code>refresh target details</div>
-                        <div class="terminal-help-item"><code>!download /path</code>pull a file</div>
-                        <div class="terminal-help-item"><code>!upload</code>push a local file</div>
-                        <div class="terminal-help-item"><code>!screenshot</code>capture screen</div>
-                        <div class="terminal-help-item"><code>!persist</code>os-specific persistence</div>
-                        <div class="terminal-help-item"><code>!sleep 30</code>change beacon interval</div>
-                        <div class="terminal-help-item"><code>!kill</code>terminate the agent</div>
-                    </div>
+                        <div class="terminal-sidebar-card">
+                            <div class="sidebar-card-title">command guide</div>
+                            <div class="terminal-help-grid">
+                                <div class="terminal-help-item"><code>!info</code>refresh target details</div>
+                                <div class="terminal-help-item"><code>!download /path</code>pull a file</div>
+                                <div class="terminal-help-item"><code>!upload</code>push a local file</div>
+                                <div class="terminal-help-item"><code>!screenshot</code>capture screen</div>
+                                <div class="terminal-help-item"><code>!persist</code>os-specific persistence</div>
+                                <div class="terminal-help-item"><code>!sleep 30</code>change beacon interval</div>
+                                <div class="terminal-help-item"><code>!kill</code>terminate the agent</div>
+                            </div>
+                        </div>
+                    </aside>
                 </div>
-            </aside>
-        </main>
+            </main>
+        </div>
     </div>
 
-    <div class="modal terminal-history-modal" id="terminalHistoryModal">
+    <div class="modal terminal-history-modal" id="terminalHistoryModal" role="dialog" aria-modal="true" aria-labelledby="terminalHistoryTitle">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>full terminal history</h3>
+                <h3 id="terminalHistoryTitle">Full terminal history</h3>
             </div>
             <div class="modal-body">
                 <div class="terminal-history-toolbar">
@@ -882,7 +280,73 @@
         </div>
     </div>
 
+    <div class="modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmTitle">Confirm action</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage" class="confirm-message"></p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" id="confirmCancelBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmOkBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notifications"></div>
+
     <script src="/js/auth.js"></script>
+    <script>
+        // Inline UI toast + styled confirm that replace the native alert()/confirm()
+        function uiToast(message, kind = 'info') {
+            const host = document.getElementById('notifications');
+            if (!host) return;
+            const toast = document.createElement('div');
+            toast.className = `notification ${kind}`;
+            toast.textContent = message;
+            toast.style.cursor = 'pointer';
+            toast.addEventListener('click', () => toast.remove());
+            host.prepend(toast);
+            setTimeout(() => toast.remove(), 4500);
+        }
+
+        window.UIConfirm = function(message, confirmLabel = 'Confirm') {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('confirmModal');
+                const messageEl = document.getElementById('confirmMessage');
+                const okBtn = document.getElementById('confirmOkBtn');
+                const cancelBtn = document.getElementById('confirmCancelBtn');
+                const titleEl = document.getElementById('confirmTitle');
+                if (!modal || !messageEl || !okBtn || !cancelBtn) {
+                    resolve(window.confirm(message));
+                    return;
+                }
+                const finish = (result) => {
+                    okBtn.onclick = null;
+                    cancelBtn.onclick = null;
+                    modal.onclick = null;
+                    document.onkeydown = null;
+                    modal.classList.remove('active');
+                    resolve(Boolean(result));
+                };
+                if (titleEl) titleEl.textContent = 'Confirm action';
+                messageEl.textContent = message;
+                okBtn.textContent = confirmLabel;
+                okBtn.onclick = () => finish(true);
+                cancelBtn.onclick = () => finish(false);
+                modal.onclick = (event) => {
+                    if (event.target === modal) finish(false);
+                };
+                document.onkeydown = (event) => {
+                    if (event.key === 'Escape') finish(false);
+                };
+                okBtn.focus();
+                modal.classList.add('active');
+            });
+        };
+    </script>
     <script src="/js/terminal.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -895,13 +359,29 @@
             const agentId = urlParams.get('id');
 
             if (!agentId) {
-                alert('No agent ID was provided.');
-                window.location.href = '/dashboard';
+                uiToast('No agent ID was provided. Redirecting to the dashboard...', 'warning');
+                setTimeout(() => { window.location.href = '/dashboard'; }, 900);
                 return;
             }
 
             Terminal.init(agentId);
         });
+
+        // Navigation drawer (mobile) + sign out
+        document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+            document.body.classList.toggle('sidebar-open');
+        });
+        document.getElementById('sidebarScrim')?.addEventListener('click', () => {
+            document.body.classList.remove('sidebar-open');
+        });
+        document.getElementById('logoutBtn')?.addEventListener('click', () => Auth.logout());
+
+        // Point the sidebar "Agent terminal" link at the current agent
+        const __agentId = new URLSearchParams(window.location.search).get('id');
+        if (__agentId) {
+            const navLink = document.getElementById('navTerminalLink');
+            if (navLink) navLink.setAttribute('href', `/terminal?id=${encodeURIComponent(__agentId)}`);
+        }
     </script>
 </body>
 </html>

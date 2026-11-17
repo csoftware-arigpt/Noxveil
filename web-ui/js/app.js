@@ -114,6 +114,11 @@ const App = {
             agentInterval: document.getElementById("agentInterval"),
             cancelModal: document.getElementById("cancelModal"),
             saveModal: document.getElementById("saveModal"),
+            confirmModal: document.getElementById("confirmModal"),
+            confirmTitle: document.getElementById("confirmTitle"),
+            confirmMessage: document.getElementById("confirmMessage"),
+            confirmOkBtn: document.getElementById("confirmOkBtn"),
+            confirmCancelBtn: document.getElementById("confirmCancelBtn"),
         };
     },
 
@@ -272,10 +277,24 @@ const App = {
             }
         });
 
+        this.ui.confirmOkBtn?.addEventListener("click", () => this.resolveConfirmDialog(true));
+        this.ui.confirmCancelBtn?.addEventListener("click", () => this.resolveConfirmDialog(false));
+        this.ui.confirmModal?.addEventListener("click", (event) => {
+            if (event.target === this.ui.confirmModal) {
+                this.resolveConfirmDialog(false);
+            }
+        });
+
         document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape" && this.ui.agentModal?.classList.contains("active")) {
-                this.closeModal();
-                return;
+            if (event.key === "Escape") {
+                if (this.ui.confirmModal?.classList.contains("active")) {
+                    this.resolveConfirmDialog(false);
+                    return;
+                }
+                if (this.ui.agentModal?.classList.contains("active")) {
+                    this.closeModal();
+                    return;
+                }
             }
             if (event.key === "/" && !this.isTypingInInput(event.target)) {
                 event.preventDefault();
@@ -973,7 +992,10 @@ const App = {
             return;
         }
 
-        const confirmed = window.confirm(`Delete ${agent.hostname || agent.id}? This also removes its tasks and history`);
+        const confirmed = await this.confirmDialog(`Delete ${agent.hostname || agent.id}? This also removes its tasks and history`, {
+            title: "Delete agent",
+            confirmLabel: "Delete",
+        });
         if (!confirmed) {
             return;
         }
@@ -1055,7 +1077,10 @@ const App = {
     },
 
     async restartTunnel() {
-        const confirmed = window.confirm("Restart the Cloudflare route? Existing launch links will need to be refreshed");
+        const confirmed = await this.confirmDialog("Restart the Cloudflare route? Existing launch links will need to be refreshed", {
+            title: "Restart route",
+            confirmLabel: "Restart",
+        });
         if (!confirmed) {
             return;
         }
@@ -1178,6 +1203,38 @@ const App = {
         window.setTimeout(() => {
             notification.remove();
         }, 4500);
+    },
+
+    // Styled confirmation dialog that replaces window.confirm().
+    // Falls back to the native confirm() when the modal markup is missing.
+    confirmDialog(message, options = {}) {
+        const { title = "Confirm action", confirmLabel = "Confirm", cancelLabel = "Cancel" } = options;
+        if (!this.ui.confirmModal || !this.ui.confirmMessage || !this.ui.confirmOkBtn || !this.ui.confirmCancelBtn) {
+            return Promise.resolve(window.confirm(message));
+        }
+        if (typeof this.confirmResolver === "function") {
+            this.resolveConfirmDialog(false);
+        }
+        if (this.ui.confirmTitle) {
+            this.ui.confirmTitle.textContent = title;
+        }
+        this.ui.confirmMessage.textContent = message;
+        this.ui.confirmOkBtn.textContent = confirmLabel;
+        this.ui.confirmCancelBtn.textContent = cancelLabel;
+        this.ui.confirmOkBtn.focus();
+        return new Promise((resolve) => {
+            this.confirmResolver = resolve;
+            this.ui.confirmModal.classList.add("active");
+        });
+    },
+
+    resolveConfirmDialog(result) {
+        const resolver = this.confirmResolver;
+        this.confirmResolver = null;
+        this.ui.confirmModal?.classList.remove("active");
+        if (typeof resolver === "function") {
+            resolver(Boolean(result));
+        }
     },
 
     async copyText(value, feedback = "Copied to clipboard") {

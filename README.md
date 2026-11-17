@@ -453,7 +453,7 @@ noxveil/
 │   ├── terminal.html        # Agent terminal
 │   ├── bash.html            # Server shell
 │   ├── login.html           # Login page
-│   ├── css/style.css        # Dark hacker theme
+│   ├── css/style.css        # Clean ops-console theme (dark, sidebar shell)
 │   └── js/
 │       ├── app.js           # Dashboard logic
 │       ├── terminal.js      # WebSocket terminal

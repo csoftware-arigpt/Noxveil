@@ -1,11 +1,15 @@
 import asyncio
 import base64
+import fcntl
 import json
 import os
 import shlex
 import shutil
+import signal
 import socket
+import struct
 import subprocess
+import termios
 from contextlib import suppress
 from datetime import datetime, timedelta
 from typing import Optional
@@ -1774,23 +1778,44 @@ async def bash_terminal_websocket(websocket: WebSocket):
 
     configured_shell = os.getenv("SHELL")
     shell = configured_shell or shutil.which("bash") or shutil.which("sh") or "/bin/sh"
+    shell_name = os.path.basename(shell)
     shell_home = os.path.expanduser("~")
+
+    # Run the shell in a controlled mode: no user rc-files, no ZLE line editor,
+    # plain dumb terminal so the PTY emits plain text instead of redraw escapes.
+    if shell_name == "zsh":
+        shell_cmd = [shell, "-f", "-i", "+o", "promptsp", "+o", "zle"]
+    elif shell_name == "bash":
+        shell_cmd = [shell, "--noprofile", "--norc", "-i"]
+    else:
+        shell_cmd = [shell]
+
     shell_env = os.environ.copy()
-    shell_env.setdefault("TERM", "xterm-256color")
+    shell_env["TERM"] = "dumb"
+    shell_env["PS1"] = "noxveil$ "
     shell_env.setdefault("HOME", shell_home)
 
     master_fd, slave_fd = os.openpty()
-    process = subprocess.Popen(
-        [shell, "-i"],
-        stdin=slave_fd,
-        stdout=slave_fd,
-        stderr=slave_fd,
-        cwd=shell_home,
-        env=shell_env,
-        close_fds=True,
-        start_new_session=True,
-    )
-    os.close(slave_fd)
+    try:
+        # Set a fixed window size so shells that query the terminal get sane values.
+        with suppress(OSError):
+            fcntl.ioctl(
+                slave_fd,
+                termios.TIOCSWINSZ,
+                struct.pack("HHHH", 24, 110, 0, 0),
+            )
+    finally:
+        process = subprocess.Popen(
+            shell_cmd,
+            stdin=slave_fd,
+            stdout=slave_fd,
+            stderr=slave_fd,
+            cwd=shell_home,
+            env=shell_env,
+            close_fds=True,
+            start_new_session=True,
+        )
+        os.close(slave_fd)
     os.set_blocking(master_fd, False)
 
     loop = asyncio.get_running_loop()
@@ -1883,6 +1908,24 @@ async def bash_terminal_websocket(websocket: WebSocket):
                     continue
 
                 await websocket.send_json({"type": "error", "data": "Unsupported signal"})
+                continue
+
+            if message_type == "resize":
+                try:
+                    rows = int(message.get("rows") or 24)
+                    cols = int(message.get("cols") or 110)
+                except (TypeError, ValueError):
+                    rows, cols = 24, 110
+                rows = max(1, min(rows, 200))
+                cols = max(1, min(cols, 500))
+                if process.poll() is None:
+                    with suppress(OSError, struct.error):
+                        fcntl.ioctl(
+                            master_fd,
+                            termios.TIOCSWINSZ,
+                            struct.pack("HHHH", rows, cols, 0, 0),
+                        )
+                        os.killpg(process.pid, signal.SIGWINCH)
                 continue
 
             if message_type != "input":

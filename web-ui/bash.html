@@ -3,274 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
     <title>Noxveil // server shell</title>
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            background: var(--ink-0);
-            color: var(--text-light);
-            font-family: var(--font-sans);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .header {
-            background: var(--ink-1);
-            border-bottom: 1px solid var(--line);
-            padding: 12px 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 14px;
-            position: relative;
-        }
-
-        .header::after {
-            content: "";
-            position: absolute;
-            left: 0; right: 0; bottom: -1px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--signal-edge) 30%, var(--signal-edge) 70%, transparent);
-            opacity: 0.5;
-        }
-
-        .header h1 {
-            font-family: var(--font-mono);
-            font-size: 0.94rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-light);
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin: 0;
-        }
-
-        .header h1::before {
-            content: "▍";
-            color: var(--signal);
-            font-size: 1.1rem;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .status {
-            font-family: var(--font-mono);
-            font-size: 0.74rem;
-            padding: 5px 10px;
-            border-radius: var(--r-3);
-            background: var(--ink-2);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            border: 1px solid var(--line);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-muted);
-        }
-
-        .status.connected {
-            background: var(--signal-soft);
-            border-color: var(--signal-edge);
-            color: var(--signal);
-        }
-
-        .status.disconnected {
-            background: var(--alarm-soft);
-            border-color: var(--alarm-edge);
-            color: var(--alarm);
-        }
-
-        .status .status-indicator {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: currentColor;
-            box-shadow: 0 0 8px currentColor;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        .terminal-container {
-            flex: 1;
-            padding: 14px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .session-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-
-        .shell-preset {
-            appearance: none;
-            border: 1px solid var(--line);
-            background: var(--ink-1);
-            color: var(--text-light);
-            border-radius: var(--r-3);
-            padding: 6px 10px;
-            font-family: var(--font-mono);
-            font-size: 0.74rem;
-            cursor: pointer;
-            transition: border-color var(--transition-fast), color var(--transition-fast);
-        }
-
-        .shell-preset::before {
-            content: "$ ";
-            color: var(--text-dim);
-        }
-
-        .shell-preset:hover {
-            border-color: var(--signal-edge);
-            color: var(--signal);
-        }
-
-        #terminal {
-            flex: 1;
-            background: var(--ink-0);
-            border: 1px solid var(--line);
-            border-radius: var(--r-4);
-            padding: 14px;
-            overflow-y: auto;
-            font-family: var(--font-mono);
-            font-size: 13px;
-            line-height: 1.55;
-            position: relative;
-        }
-
-        .output-line {
-            white-space: pre-wrap;
-            word-break: break-all;
-            margin-bottom: 4px;
-            animation: fadeIn 0.18s ease;
-        }
-
-        .output-chunk {
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(2px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .output-line.error { color: var(--alarm); }
-        .output-line.success { color: var(--text-light); }
-        .output-line.info { color: var(--info); }
-        .output-line.warning { color: var(--warn); }
-
-        .input-line {
-            display: flex;
-            align-items: center;
-            margin-top: 12px;
-            padding: 12px 14px;
-            border: 1px solid var(--line);
-            border-radius: var(--r-3);
-            background: var(--ink-1);
-            gap: 10px;
-        }
-
-        .prompt {
-            color: var(--signal);
-            white-space: nowrap;
-            font-weight: 600;
-            font-family: var(--font-mono);
-            font-size: 13px;
-        }
-
-        #commandInput {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: var(--text-light);
-            font-family: var(--font-mono);
-            font-size: 13px;
-            outline: none;
-            min-width: 0;
-            padding: 0;
-        }
-
-        .input-line.secret-mode {
-            border-color: var(--warn-edge);
-            background: var(--warn-soft);
-        }
-
-        .input-line.secret-mode .prompt {
-            color: var(--warn);
-        }
-
-        .history-indicator {
-            position: fixed;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--ink-2);
-            border: 1px solid var(--line);
-            padding: 6px 12px;
-            border-radius: var(--r-3);
-            font-family: var(--font-mono);
-            font-size: 0.74rem;
-            color: var(--text-muted);
-            display: none;
-            z-index: 1000;
-        }
-
-        .history-indicator.show { display: block; }
+        /* Full-height app page: the terminal owns the viewport */
+        .app-main { overflow: hidden; }
 
         @media (max-width: 768px) {
-            .header { flex-direction: column; align-items: stretch; }
-            .header h1 { justify-content: center; }
-            .header-actions { justify-content: center; width: 100%; }
-            .header-actions .status { width: 100%; justify-content: center; }
             .input-line { flex-direction: column; align-items: stretch; }
-            .prompt { text-align: center; }
+            .prompt { text-align: left; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>NOXVEIL // SERVER SHELL</h1>
-        <div class="header-actions">
-            <span class="status disconnected" id="connectionStatus">
-                <span class="status-indicator"></span>
-                <span>disconnected</span>
-            </span>
-            <a href="/dashboard" class="btn btn-small">← back</a>
-        </div>
-    </div>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+            <div class="sidebar-brand">
+                <span class="brand-mark" aria-hidden="true">N</span>
+                <span class="brand-name">Noxveil<span class="brand-sub">opcon</span></span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">workspace</div>
+                <a class="sidebar-link" href="/dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                    Dashboard
+                </a>
+                <a class="sidebar-link" href="/terminal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                    Agent terminal
+                </a>
+                <a class="sidebar-link active" href="/shell" aria-current="page">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="7" rx="2"/><rect x="2" y="14" width="20" height="7" rx="2"/><line x1="6" y1="6.5" x2="6.01" y2="6.5"/><line x1="6" y1="17.5" x2="6.01" y2="17.5"/></svg>
+                    Server shell
+                </a>
+            </nav>
+            <div class="sidebar-foot">
+                <div class="operator-chip">
+                    <span class="operator-dot" aria-hidden="true"></span>
+                    <span>operator</span>
+                </div>
+                <button class="btn btn-small btn-ghost" id="logoutBtn">Sign out</button>
+            </div>
+        </aside>
 
-    <div class="terminal-container">
-        <div class="session-toolbar" id="sessionToolbar">
-            <button class="btn btn-small" id="copySessionBtn">copy log</button>
-            <button class="btn btn-small" id="saveSessionBtn">save log</button>
-            <button class="btn btn-small" id="clearSessionBtn">clear</button>
-            <button class="btn btn-small btn-warning" id="reconnectShellBtn">reconnect</button>
-            <button class="shell-preset" data-shell-command="pwd">pwd</button>
-            <button class="shell-preset" data-shell-command="whoami">whoami</button>
-            <button class="shell-preset" data-shell-command="hostname">hostname</button>
-            <button class="shell-preset" data-shell-command="sudo -l">sudo -l</button>
-        </div>
-        <div id="terminal">
-            <div class="output-line info">// connecting to noxveil server shell...</div>
-        </div>
-        <div class="input-line">
-            <span class="prompt" id="prompt">server@noxveil:~$</span>
-            <input type="text" id="commandInput" placeholder="enter a command..." autocomplete="off" autofocus>
+        <div class="sidebar-scrim" id="sidebarScrim" aria-hidden="true"></div>
+
+        <div class="app-main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="icon-btn" id="sidebarToggle" aria-label="Toggle navigation" aria-controls="sidebar">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+                    </button>
+                    <div class="topbar-titles">
+                        <div class="topbar-title">Server shell</div>
+                        <div class="topbar-sub">interactive bash on the noxveil host</div>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <span class="status disconnected" id="connectionStatus">
+                        <span class="status-indicator" aria-hidden="true"></span>
+                        <span>disconnected</span>
+                    </span>
+                    <a href="/dashboard" class="btn btn-small btn-ghost">dashboard</a>
+                </div>
+            </header>
+
+            <div class="shell-page-main">
+                <div class="terminal-container">
+                    <div class="session-toolbar" id="sessionToolbar">
+                        <button class="btn btn-small" id="copySessionBtn">copy log</button>
+                        <button class="btn btn-small" id="saveSessionBtn">save log</button>
+                        <button class="btn btn-small" id="clearSessionBtn">clear</button>
+                        <button class="btn btn-small btn-warning" id="reconnectShellBtn">reconnect</button>
+                        <button class="shell-preset" data-shell-command="pwd">pwd</button>
+                        <button class="shell-preset" data-shell-command="whoami">whoami</button>
+                        <button class="shell-preset" data-shell-command="hostname">hostname</button>
+                        <button class="shell-preset" data-shell-command="sudo -l">sudo -l</button>
+                    </div>
+                    <div id="terminal">
+                        <div class="output-line info">// connecting to noxveil server shell...</div>
+                    </div>
+                    <div class="input-line">
+                        <span class="prompt" id="prompt">server@noxveil:~$</span>
+                        <input type="text" id="commandInput" placeholder="enter a command..." autocomplete="off" autofocus aria-label="Server shell command input">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -292,6 +111,7 @@
         const maxReconnectAttempts = 10;
         let awaitingSecretInput = false;
         let sessionTranscript = [];
+        let escBuffer = "";
 
         const terminal = document.getElementById("terminal");
         const commandInput = document.getElementById("commandInput");
@@ -301,6 +121,33 @@
         const historyPosition = document.getElementById("historyPosition");
         const historyTotal = document.getElementById("historyTotal");
         const inputLine = document.querySelector(".input-line");
+
+        // Strip ANSI/VT escape sequences and normalize control characters so the
+        // PTY stream renders as plain text instead of raw terminal codes.
+        function sanitizeChunk(raw) {
+            let text = escBuffer + String(raw ?? "");
+            escBuffer = "";
+
+            // OSC sequences: ESC ] ... (BEL | ESC \)
+            text = text.replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g, "");
+            // CSI sequences: ESC [ ... final byte
+            text = text.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, "");
+            // Other two-byte escape sequences
+            text = text.replace(/\x1b[@-Z\\-_]/g, "");
+            // Line ending normalization
+            text = text.replace(/\r\n/g, "\n");
+            text = text.replace(/\r/g, "");
+            // Drop remaining C0 control characters except \n and \t
+            text = text.replace(/[\x00-\x08\x0b-\x1f\x7f]/g, "");
+
+            // Hold back an escape sequence cut in half between chunks
+            const tail = text.match(/\x1b(?:\[[0-?]*[ -/]*|\][^\x07\x1b]*)?$/);
+            if (tail && tail[0]) {
+                escBuffer = tail[0];
+                text = text.slice(0, text.length - tail[0].length);
+            }
+            return text;
+        }
 
         function addOutput(text, type = "success") {
             const line = document.createElement("div");
@@ -319,6 +166,14 @@
             terminal.appendChild(span);
             terminal.scrollTop = terminal.scrollHeight;
             sessionTranscript.push(text);
+        }
+
+        function sendResize() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const cols = Math.max(20, Math.min(500, Math.floor(terminal.clientWidth / 8)));
+                const rows = Math.max(5, Math.min(200, Math.floor(terminal.clientHeight / 20)));
+                ws.send(JSON.stringify({ type: "resize", rows, cols }));
+            }
         }
 
         function updateSecretInputMode(enabled) {
@@ -381,6 +236,7 @@
                 connectionStatus.innerHTML = `<span class="status-indicator"></span><span>connected</span>`;
                 addOutput("connected to noxveil server shell", "info");
                 commandInput.focus();
+                sendResize();
             };
 
             ws.onmessage = function(event) {
@@ -392,10 +248,14 @@
                             prompt.textContent = `server@${message.hostname}:~$`;
                         }
                         break;
-                    case "output":
-                        appendStream(message.data, message.is_error ? "error" : "success");
-                        detectSecretPrompt(message.data);
+                    case "output": {
+                        const clean = sanitizeChunk(message.data);
+                        if (clean) {
+                            appendStream(clean, message.is_error ? "error" : "success");
+                        }
+                        detectSecretPrompt(clean);
                         break;
+                    }
                     case "ping":
                         ws.send(JSON.stringify({ type: "pong" }));
                         break;
@@ -474,7 +334,8 @@
 
             if (!awaitingSecretInput && trimmed) {
                 addToHistory(trimmed);
-                sessionTranscript.push(`$ ${trimmed}\n`);
+                // The PTY echoes the prompt and the command itself, so the raw
+                // command is not duplicated into the transcript here.
             } else if (awaitingSecretInput) {
                 sessionTranscript.push(`$ ********\n`);
             }
@@ -552,6 +413,8 @@
             }
         });
 
+        window.addEventListener("resize", () => sendResize());
+
         connect();
         setTimeout(() => {
             addOutput("// tips:", "info");
@@ -560,6 +423,16 @@
             addOutput("  ctrl+c  interrupt running command", "success");
             addOutput("  sudo prompts switch input to hidden mode", "warning");
         }, 500);
+    </script>
+    <script>
+        // Navigation drawer (mobile) + sign out
+        document.getElementById("sidebarToggle")?.addEventListener("click", () => {
+            document.body.classList.toggle("sidebar-open");
+        });
+        document.getElementById("sidebarScrim")?.addEventListener("click", () => {
+            document.body.classList.remove("sidebar-open");
+        });
+        document.getElementById("logoutBtn")?.addEventListener("click", () => Auth.logout());
     </script>
 </body>
 </html>
